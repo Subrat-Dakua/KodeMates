@@ -1,0 +1,55 @@
+/* Kodmates Global Base & Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--km-font-family);
+  background-color: var(--km-bg-canvas);
+  color: var(--km-text-light);
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--km-bg-canvas);
+  color: var(--km-text-light);
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+/* Accessibility Focus States */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--km-border-focus);
+  outline-offset: 3px;
+}
+
+/* Page Shell with Cinematic Ambient Illumination (near-black with soft warm ivory/gold light) */
+.page-viewport {
+  position: relative;
+  width: 100%;
+  min-height: 200vh;
+  background-color: var(--km-bg-canvas);
+  background-image: 
+    radial-gradient(1100px 380px at 50% 0%, rgba(254, 239, 184, 0.038) 0%, rgba(254, 239, 184, 0.012) 45%, transparent 75%),
+    linear-gradient(180deg, #070909 0%, #060808 100%);
+}
+
+.canvas-preview-placeholder {
+  max-width: var(--km-header-max-width);
+  margin: 80px auto;
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--km-text-tagline);
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  border: 1px dashed rgba(254, 239, 184, 0.12);
+  border-radius: 12px;
+  background: rgba(10, 12, 12, 0.4);
+}

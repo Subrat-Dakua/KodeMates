@@ -1,0 +1,52 @@
+:root {
+  /* Brand Colors */
+  --km-accent-primary: #FEEFB8;
+  --km-accent-primary-hover: #FFF5CE;
+  --km-accent-primary-glow: rgba(254, 239, 184, 0.14);
+  --km-accent-champagne: #E4D7A5;
+  --km-accent-subtle: rgba(254, 239, 184, 0.08);
+
+  /* Dark Theme Surfaces */
+  --km-bg-canvas: #060808;
+  --km-bg-header-initial: rgba(8, 10, 10, 0.45);
+  --km-bg-header-scrolled: rgba(8, 10, 10, 0.88);
+  --km-bg-mobile-menu: #080A0A;
+  --km-bg-card: rgba(14, 18, 18, 0.65);
+
+  /* Borders */
+  --km-border-header: rgba(254, 239, 184, 0.07);
+  --km-border-header-scrolled: rgba(254, 239, 184, 0.11);
+  --km-border-focus: #FEEFB8;
+
+  /* Typography Colors */
+  --km-text-light: #FFFFFF;
+  --km-text-brand: #FEEFB8;
+  --km-text-nav-default: rgba(246, 244, 236, 0.82);
+  --km-text-nav-hover: #FEEFB8;
+  --km-text-tagline: rgba(240, 242, 238, 0.50);
+  --km-text-dark-cta: #080A0A;
+
+  /* Typography Sizing & Weights */
+  --km-font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --km-font-size-logo: 19.5px;
+  --km-font-size-tagline: 10.5px;
+  --km-font-size-nav: 13.5px;
+  --km-font-size-cta: 13px;
+
+  /* Header Layout Metrics */
+  --km-header-max-width: 1320px;
+  --km-header-height: 76px;
+  --km-header-padding-x: 28px;
+  --km-cta-height: 42px;
+  --km-cta-radius: 8px;
+  --km-cta-padding-x: 18px;
+
+  /* Transitions & Blur */
+  --km-transition-fast: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  --km-transition-header: 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  --km-backdrop-blur: 16px;
+
+  /* Elevation & Z-index */
+  --km-z-header: 1000;
+  --km-z-mobile-drawer: 1100;
+}

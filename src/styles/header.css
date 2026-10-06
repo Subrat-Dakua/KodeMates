@@ -1,0 +1,446 @@
+/* ==================================================
+   KODMATES — Modern Premium Header & Navigation Styles
+   Step 01 Polish: Cinematic Atmosphere, Enhanced Brand Presence,
+   Warm Ivory Navigation & Restrained CTA
+   ================================================== */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--km-header-height);
+  z-index: var(--km-z-header);
+  background-color: var(--km-bg-header-initial);
+  background-image: linear-gradient(180deg, rgba(254, 239, 184, 0.018) 0%, transparent 100%);
+  border-bottom: 1px solid var(--km-border-header);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: 
+    background-color var(--km-transition-header),
+    border-color var(--km-transition-header),
+    backdrop-filter var(--km-transition-header),
+    box-shadow var(--km-transition-header);
+}
+
+/* Subtle Cinematic Atmosphere behind the header */
+.site-header::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1000px;
+  height: 140px;
+  background: radial-gradient(
+    ellipse 65% 55% at 50% 25%,
+    rgba(254, 239, 184, 0.042) 0%,
+    rgba(254, 239, 184, 0.012) 50%,
+    transparent 75%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Scrolled state — seamless dark glass with subtle warm gold border */
+.site-header--scrolled {
+  background-color: var(--km-bg-header-scrolled);
+  background-image: none;
+  border-bottom: 1px solid var(--km-border-header-scrolled);
+  backdrop-filter: blur(var(--km-backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--km-backdrop-blur));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+}
+
+/* Centered Desktop Layout Container (approx 25% Logo / 50% Nav / 25% CTA) */
+.site-header__container {
+  max-width: var(--km-header-max-width);
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 var(--km-header-padding-x);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+/* ==================================================
+   LEFT — BRAND LOGO (~25% area)
+   Stronger studio presence, slightly larger mark, clean typography
+   ================================================== */
+.brand-logo {
+  flex: 1 1 0%;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 14px;
+  cursor: pointer;
+  outline: none;
+}
+
+.brand-logo__mark {
+  width: 33px;
+  height: 33px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--km-transition-fast), filter var(--km-transition-fast);
+}
+
+.brand-logo:hover .brand-logo__mark {
+  filter: drop-shadow(0 0 10px rgba(254, 239, 184, 0.45));
+  transform: scale(1.02);
+}
+
+.brand-logo__mark svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.brand-logo__meta {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.brand-logo__name {
+  font-size: var(--km-font-size-logo);
+  font-weight: 750;
+  letter-spacing: 0.09em;
+  color: var(--km-text-light);
+  line-height: 1.1;
+  text-transform: uppercase;
+  transition: color var(--km-transition-fast);
+}
+
+.brand-logo:hover .brand-logo__name {
+  color: var(--km-accent-primary);
+}
+
+.brand-logo__tagline {
+  font-size: var(--km-font-size-tagline);
+  font-weight: 400;
+  color: var(--km-text-tagline);
+  letter-spacing: 0.025em;
+  margin-top: 3px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* ==================================================
+   CENTER — NAVIGATION (~50% area, optically centered)
+   Warm ivory / soft ivory inactive state, #FEEFB8 active
+   ================================================== */
+.desktop-nav {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.nav-list {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  gap: 32px;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0 4px;
+  font-size: var(--km-font-size-nav);
+  font-weight: 500;
+  color: var(--km-text-nav-default);
+  text-decoration: none;
+  letter-spacing: 0.015em;
+  line-height: 1;
+  transition: color var(--km-transition-fast);
+}
+
+.nav-link:hover {
+  color: var(--km-text-nav-hover);
+}
+
+/* Subtle Active State (Understated warm gold indicator) */
+.nav-link.is-active {
+  color: var(--km-accent-primary);
+  font-weight: 600;
+}
+
+.nav-link.is-active::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 2px;
+  border-radius: 999px;
+  background-color: var(--km-accent-primary);
+  box-shadow: 0 0 6px rgba(254, 239, 184, 0.45);
+}
+
+/* Understated micro-underline on hover for inactive links */
+.nav-link:not(.is-active)::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 12px;
+  height: 1.5px;
+  border-radius: 999px;
+  background-color: rgba(254, 239, 184, 0.5);
+  transition: transform var(--km-transition-fast), opacity var(--km-transition-fast);
+  opacity: 0;
+}
+
+.nav-link:not(.is-active):hover::after {
+  transform: translateX(-50%) scaleX(1);
+  opacity: 1;
+}
+
+/* ==================================================
+   RIGHT — CTA BUTTON (~25% area)
+   Refined, restrained, 42px height, 18px padding, soft lift
+   ================================================== */
+.header-cta {
+  flex: 1 1 0%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--km-cta-height);
+  padding: 0 var(--km-cta-padding-x);
+  background-color: var(--km-accent-primary);
+  color: var(--km-text-dark-cta);
+  font-family: var(--km-font-family);
+  font-size: var(--km-font-size-cta);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-radius: var(--km-cta-radius);
+  border: 1px solid rgba(254, 239, 184, 0.45);
+  cursor: pointer;
+  line-height: 1;
+  transition: 
+    background-color var(--km-transition-fast),
+    transform var(--km-transition-fast),
+    box-shadow var(--km-transition-fast);
+  white-space: nowrap;
+}
+
+.cta-button .cta-arrow {
+  margin-left: 6px;
+  display: inline-block;
+  font-size: 13px;
+  transition: transform var(--km-transition-fast);
+}
+
+.cta-button:hover {
+  background-color: var(--km-accent-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 10px var(--km-accent-primary-glow);
+}
+
+.cta-button:hover .cta-arrow {
+  transform: translateX(2px);
+}
+
+.cta-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px var(--km-accent-primary-glow);
+}
+
+/* ==================================================
+   MOBILE MENU TRIGGER & DRAWER
+   ================================================== */
+.mobile-toggle {
+  display: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  background: rgba(254, 239, 184, 0.04);
+  border: 1px solid rgba(254, 239, 184, 0.14);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--km-text-light);
+  transition: background-color var(--km-transition-fast), border-color var(--km-transition-fast);
+  flex-shrink: 0;
+}
+
+.mobile-toggle:hover {
+  background: rgba(254, 239, 184, 0.09);
+  border-color: rgba(254, 239, 184, 0.28);
+}
+
+.hamburger-icon {
+  width: 18px;
+  height: 13px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.hamburger-line {
+  display: block;
+  width: 100%;
+  height: 1.75px;
+  background-color: var(--km-accent-primary);
+  border-radius: 2px;
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+
+/* Hamburger active transform into X */
+.mobile-toggle[aria-expanded="true"] .hamburger-line:nth-child(1) {
+  transform: translateY(5.6px) rotate(45deg);
+}
+
+.mobile-toggle[aria-expanded="true"] .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.mobile-toggle[aria-expanded="true"] .hamburger-line:nth-child(3) {
+  transform: translateY(-5.6px) rotate(-45deg);
+}
+
+/* Mobile Menu Overlay / Drawer */
+.mobile-drawer {
+  position: fixed;
+  top: var(--km-header-height);
+  left: 0;
+  width: 100%;
+  height: calc(100dvh - var(--km-header-height));
+  background-color: var(--km-bg-mobile-menu);
+  border-top: 1px solid var(--km-border-header-scrolled);
+  display: flex;
+  flex-direction: column;
+  padding: 24px var(--km-header-padding-x) 40px;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-12px);
+  transition: opacity 240ms cubic-bezier(0.16, 1, 0.3, 1), transform 240ms cubic-bezier(0.16, 1, 0.3, 1), visibility 240ms;
+  z-index: var(--km-z-mobile-drawer);
+}
+
+.mobile-drawer.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.mobile-nav-list {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0 0 32px 0;
+  padding: 0;
+}
+
+.mobile-nav-item {
+  width: 100%;
+  border-bottom: 1px solid rgba(254, 239, 184, 0.05);
+}
+
+.mobile-nav-link {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--km-text-light);
+  text-decoration: none;
+  padding: 12px 4px;
+  transition: color var(--km-transition-fast), padding-left var(--km-transition-fast);
+}
+
+.mobile-nav-link:hover,
+.mobile-nav-link:focus-visible {
+  color: var(--km-accent-primary);
+  padding-left: 6px;
+}
+
+.mobile-nav-link.is-active {
+  color: var(--km-accent-primary);
+  font-weight: 600;
+}
+
+.mobile-cta-wrapper {
+  margin-top: auto;
+  padding-top: 20px;
+}
+
+.mobile-cta-button {
+  width: 100%;
+  height: 44px;
+  font-size: 14px;
+}
+
+/* ==================================================
+   RESPONSIVE BREAKPOINTS
+   ================================================== */
+@media (max-width: 1080px) {
+  .nav-list {
+    gap: 22px;
+  }
+}
+
+@media (max-width: 960px) {
+  .brand-logo__tagline {
+    display: none;
+  }
+  .nav-list {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .site-header {
+    height: 70px;
+  }
+  
+  :root {
+    --km-header-height: 70px;
+    --km-header-padding-x: 20px;
+  }
+
+  .desktop-nav,
+  .header-cta {
+    display: none;
+  }
+
+  .mobile-toggle {
+    display: inline-flex;
+  }
+
+  .brand-logo__tagline {
+    display: none;
+  }
+}

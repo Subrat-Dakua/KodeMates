@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kodmates — Building Digital Systems for the Real World</title>
+  <meta name="description" content="We design and develop software, web applications, Android apps and business systems that solve real operational problems." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="page-viewport" id="app">
+    <!-- Header Component (Locked Step 01) mounts here -->
+
+    <!-- STEP 02: Homepage Hero Only -->
+    <main class="page-content" id="main-content">
+      <section class="hero-section" id="hero" aria-label="Kodmates Hero">
+        <!-- Subtle dark landscape horizon & ambient warm atmospheric illumination -->
+        <div class="hero-ambient-glow" aria-hidden="true"></div>
+        <div class="hero-ambient-landscape" aria-hidden="true">
+          <img src="/assets/hero-bg-landscape.jpg" alt="" class="hero-landscape-img" loading="eager" />
+        </div>
+
+        <div class="hero-container">
+          <div class="hero-main-grid">
+            <!-- Left Column: Typography & CTAs (~46%) -->
+            <div class="hero-content-col">
+              <div class="hero-eyebrow">
+                DIGITAL SYSTEMS • WEB • MOBILE • SOFTWARE
+              </div>
+
+              <h1 class="hero-title">
+                Software Built Around <span class="hero-title-accent">Your Business.</span>
+              </h1>
+
+              <p class="hero-description">
+                We design and develop software, web applications, Android apps and business systems that solve real operational problems.
+              </p>
+
+              <div class="hero-actions">
+                <a href="#contact" class="cta-button hero-cta-primary" id="hero-primary-cta">
+                  <span>Start a Project</span>
+                  <span class="cta-arrow" aria-hidden="true">→</span>
+                </a>
+
+                <a href="#projects" class="hero-cta-secondary" id="hero-secondary-cta">
+                  <span>View Our Work</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Right Column: Interactive 3D Software Ecosystem (~54%) -->
+            <div class="hero-visual-col">
+              <div class="hero-3d-wrapper" id="hero-3d-wrapper">
+                <!-- Static Fallback (active on slow connections, reduced motion, or WebGL absence) -->
+                <div class="hero-fallback" id="hero-fallback">
+                  <img 
+                    src="/assets/hero-fallback.jpg" 
+                    alt="Kodmates Interactive Software Ecosystem" 
+                    class="hero-fallback-img"
+                    width="620" 
+                    height="620" 
+                    loading="eager" 
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Capability Row -->
+          <div class="hero-capabilities-container" aria-label="Core Capabilities">
+            <div class="hero-capabilities-track">
+              <div class="capability-item" data-capability-id="web">
+                <div class="capability-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2.5" y="4" width="19" height="15" rx="3" stroke="#FEEFB8" stroke-width="1.6"/>
+                    <path d="M2.5 9H21.5" stroke="#FEEFB8" stroke-width="1.4" stroke-opacity="0.6"/>
+                    <circle cx="6" cy="6.5" r="1" fill="#FEEFB8"/>
+                    <circle cx="9" cy="6.5" r="1" fill="#FEEFB8" fill-opacity="0.6"/>
+                    <circle cx="12" cy="6.5" r="1" fill="#FEEFB8" fill-opacity="0.3"/>
+                    <path d="M6 13H11" stroke="#FEEFB8" stroke-width="1.4" stroke-linecap="round"/>
+                    <path d="M6 16H14" stroke="#FEEFB8" stroke-width="1.4" stroke-linecap="round" stroke-opacity="0.7"/>
+                  </svg>
+                </div>
+                <span class="capability-label">Web Applications</span>
+              </div>
+
+              <div class="capability-item" data-capability-id="android">
+                <div class="capability-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="5.5" y="3" width="13" height="18" rx="3" stroke="#FEEFB8" stroke-width="1.6"/>
+                    <path d="M10 6H14" stroke="#FEEFB8" stroke-width="1.4" stroke-linecap="round" stroke-opacity="0.7"/>
+                    <circle cx="12" cy="18" r="1.1" fill="#FEEFB8"/>
+                    <path d="M9 10L15 10" stroke="#FEEFB8" stroke-width="1.4" stroke-linecap="round" stroke-opacity="0.5"/>
+                    <path d="M9 13L13 13" stroke="#FEEFB8" stroke-width="1.4" stroke-linecap="round" stroke-opacity="0.5"/>
+                  </svg>
+                </div>
+                <span class="capability-label">Android Apps</span>
+              </div>
+
+              <div class="capability-item" data-capability-id="business">
+                <div class="capability-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="3.5" width="8" height="8" rx="2" stroke="#FEEFB8" stroke-width="1.5"/>
+                    <rect x="13" y="3.5" width="8" height="8" rx="2" stroke="#FEEFB8" stroke-width="1.5"/>
+                    <rect x="3" y="13.5" width="8" height="8" rx="2" stroke="#FEEFB8" stroke-width="1.5"/>
+                    <rect x="13" y="13.5" width="8" height="8" rx="2" stroke="#FEEFB8" stroke-width="1.5"/>
+                    <path d="M7 7.5H7.01M17 7.5H17.01M7 17.5H7.01M17 17.5H17.01" stroke="#FEEFB8" stroke-width="2.5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <span class="capability-label">Business Software</span>
+              </div>
+
+              <div class="capability-item" data-capability-id="api">
+                <div class="capability-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 6C7 4.89543 7.89543 4 9 4H15C16.1046 4 17 4.89543 17 6V8C17 9.10457 16.1046 10 15 10H9C7.89543 10 7 9.10457 7 8V6Z" stroke="#FEEFB8" stroke-width="1.5"/>
+                    <path d="M7 16C7 14.8954 7.89543 14 9 14H15C16.1046 14 17 14.8954 17 16V18C17 19.1046 16.1046 20 15 20H9C7.89543 20 7 19.1046 7 18V16Z" stroke="#FEEFB8" stroke-width="1.5"/>
+                    <path d="M12 10V14" stroke="#FEEFB8" stroke-width="1.5"/>
+                    <circle cx="12" cy="12" r="1.5" fill="#FEEFB8"/>
+                    <path d="M4 8L7 8M17 8L20 8M4 16L7 16M17 16L20 16" stroke="#FEEFB8" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <span class="capability-label">APIs & Backend</span>
+              </div>
+
+              <div class="capability-item" data-capability-id="growth">
+                <div class="capability-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3.5 19.5H20.5" stroke="#FEEFB8" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M6 15.5L10.5 10L14.5 13.5L20 6.5" stroke="#FEEFB8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M16 6.5H20V10.5" stroke="#FEEFB8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <span class="capability-label">SEO & Growth</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

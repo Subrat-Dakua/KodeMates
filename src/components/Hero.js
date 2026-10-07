@@ -104,7 +104,8 @@ export class Hero {
         const { HeroEcosystem3D } = await import('./HeroEcosystem3D.js');
         this.ecosystem3D = new HeroEcosystem3D({
           container: wrapper,
-          fallbackEl: fallback
+          fallbackEl: fallback,
+          heroSectionEl: this.heroEl
         });
         this.ecosystem3D.init();
       } catch (err) {

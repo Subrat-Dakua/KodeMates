@@ -352,8 +352,23 @@
 }
 
 @media (max-width: 600px) {
+  .hero-eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-align: center;
+    justify-content: center;
+  }
+
   .hero-title {
-    font-size: 38px;
+    font-size: clamp(28px, 8vw, 34px);
+    line-height: 1.12;
+    overflow-wrap: break-word;
+  }
+
+  .hero-description {
+    font-size: 14.5px;
+    line-height: 1.55;
+    padding: 0 4px;
   }
 
   .hero-actions {
@@ -368,7 +383,7 @@
   }
 
   .hero-visual-col {
-    height: 340px;
+    height: 360px;
   }
 
   .hero-capabilities-track {

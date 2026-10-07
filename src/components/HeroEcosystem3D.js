@@ -1,46 +1,75 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 /**
  * Kodmates Interactive 3D Software Ecosystem
- * High-end digital software core with engineered physical 3D modules,
- * integrated recessed K identity aperture, 3D depth, and architectural data conduits.
+ * Step 02B: Final Approved Blender GLB Integration
+ * 
+ * Loads the production GLB asset (/assets/kodmates_hero.glb),
+ * sets up restrained studio lighting to honor approved Cycles renders,
+ * provides smooth mouse parallax, restrained idle sway, subtle module hover raycasting,
+ * scroll depth linkage, prefers-reduced-motion support, and graceful fallback handling.
  */
 export class HeroEcosystem3D {
   constructor(options = {}) {
     this.container = options.container;
     this.fallbackEl = options.fallbackEl;
+    this.heroSectionEl = options.heroSectionEl || document.getElementById('hero');
+    this.modelUrl = options.modelUrl || '/assets/kodmates_hero.glb';
+
     this.isWebGLSupported = this._checkWebGL();
     this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     this.scene = null;
     this.camera = null;
     this.renderer = null;
-    this.rootGroup = null;
-    this.coreGroup = null;
-    this.coreSphere = null;
-    this.latticeGroup = null;
-    this.apertureGroup = null;
-    this.nodes = [];
-    this.connections = [];
+    this.loader = null;
 
+    // Hierarchy handles
+    this.rootGroup = null; // Container group for parallax & scroll transforms
+    this.heroModelRoot = null; // KODMATES_HERO object from GLB
+    this.coreGroup = null;
+    this.modulesGroup = null;
+    this.connectionsGroup = null;
+    this.platformGroup = null;
+    this.environmentGroup = null;
+
+    // Module objects for hover interaction
+    this.moduleObjects = new Map();
+    this.moduleBaseScales = new Map();
+    this.moduleHoverStates = new Map();
+    this.raycaster = new THREE.Raycaster();
+    this.pointer = new THREE.Vector2(-999, -999);
+    this.hoveredModule = null;
+
+    // Pulse objects for subtle hardware activity
+    this.pulseObjects = [];
+
+    // Animation & Interaction tracking
     this.animId = null;
     this.clock = new THREE.Clock();
-
-    // Interaction targets
     this.mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
     this.scroll = { y: 0, targetY: 0 };
+    this.isLoaded = false;
+    this.isDestroyed = false;
 
+    // Bound listeners
     this._onMouseMove = this._onMouseMove.bind(this);
+    this._onPointerMove = this._onPointerMove.bind(this);
+    this._onPointerLeave = this._onPointerLeave.bind(this);
     this._onScroll = this._onScroll.bind(this);
     this._onResize = this._onResize.bind(this);
+    this._onMotionPreferenceChange = this._onMotionPreferenceChange.bind(this);
     this._animate = this._animate.bind(this);
   }
 
   _checkWebGL() {
     try {
       const canvas = document.createElement('canvas');
-      return !!(window.WebGLRenderingContext && 
-        (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+      return !!(
+        window.WebGLRenderingContext &&
+        (canvas.getContext('webgl2') || canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
+      );
     } catch {
       return false;
     }
@@ -57,16 +86,8 @@ export class HeroEcosystem3D {
     try {
       this._setupScene();
       this._createStudioLighting();
-      this._createSoftwareCore();
-      this._createPhysicalModules();
-      this._createDataConduits();
       this._bindEvents();
-
-      if (this.fallbackEl) {
-        this.fallbackEl.style.display = 'none';
-      }
-
-      this._animate();
+      this._loadGLB();
     } catch (err) {
       console.warn('3D initialization failed, falling back to static presentation:', err);
       this._showFallback();
@@ -88,8 +109,10 @@ export class HeroEcosystem3D {
     const height = this.container.clientHeight || 560;
 
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
-    this.camera.position.set(0, 0, 8.2);
+
+    // Perspective camera framing the ecosystem
+    this.camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 100);
+    this._updateCameraFraming(width, height);
 
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -99,546 +122,387 @@ export class HeroEcosystem3D {
     this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.18;
+    this.renderer.toneMappingExposure = 1.08;
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    // Initial canvas opacity 0 for gentle progressive fade-in
+    this.renderer.domElement.style.opacity = '0';
+    this.renderer.domElement.style.transition = 'opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1)';
+    this.renderer.domElement.style.display = 'block';
 
     this.container.appendChild(this.renderer.domElement);
 
+    // Root group for all interactive transforms
     this.rootGroup = new THREE.Group();
     this.scene.add(this.rootGroup);
   }
 
+  _updateCameraFraming(width, height) {
+    if (!this.camera) return;
+    const aspect = width / Math.max(height, 1);
+    this.camera.aspect = aspect;
+
+    // Model occupies approx 7.2 wide by 6.4 high.
+    // Dynamically calculate camera Z so model fits with comfortable padding across viewports.
+    let targetZ = 11.8;
+    if (aspect < 1.0) {
+      // Narrow / mobile portrait containers
+      targetZ = 12.2 / aspect;
+    } else if (aspect < 1.3) {
+      targetZ = 12.4;
+    } else {
+      targetZ = 11.6;
+    }
+
+    // Restrain bounds
+    targetZ = Math.min(Math.max(targetZ, 11.2), 16.5);
+    this.camera.position.set(0, 0, targetZ);
+    this.camera.lookAt(0, 0, 0);
+    this.camera.updateProjectionMatrix();
+  }
+
   _createStudioLighting() {
-    // 1. Soft Warm Key Light (Top-Right-Front)
-    const keyLight = new THREE.DirectionalLight(0xFEEFB8, 2.2);
-    keyLight.position.set(4.0, 4.0, 5.0);
+    // 1. Warm Champagne Key Light (Front / Upper-Right, honoring Blender #FEEFB8 key)
+    const keyLight = new THREE.DirectionalLight(0xFEEFB8, 2.4);
+    keyLight.position.set(4.5, 4.2, 6.0);
     this.scene.add(keyLight);
 
-    // 2. Controlled Champagne Rim Light (Top-Left-Back for metallic edge separation)
-    const rimLight = new THREE.DirectionalLight(0xE4D7A5, 2.8);
-    rimLight.position.set(-4.5, 3.5, -4.0);
+    // 2. Soft Ivory Rim Light (Rear / Upper-Left to sculpt module bevels and core silhouette)
+    const rimLight = new THREE.DirectionalLight(0xFFF8E7, 2.2);
+    rimLight.position.set(-4.5, 3.8, -4.5);
     this.scene.add(rimLight);
 
-    // 3. Subtle graphite fill light (Bottom-Left)
-    const fillLight = new THREE.DirectionalLight(0x22282A, 1.0);
-    fillLight.position.set(-2.0, -3.0, 3.0);
+    // 3. Subtle Graphite Fill Light (Lower-Left to soften deep shadows without washing out dark tones)
+    const fillLight = new THREE.DirectionalLight(0x283034, 1.1);
+    fillLight.position.set(-3.0, -3.2, 3.5);
     this.scene.add(fillLight);
 
-    // 4. Ambient dark studio environment
-    const ambientLight = new THREE.AmbientLight(0x121517, 1.2);
+    // 4. Overhead Accent Light (Directly above core for top-edge rim definition)
+    const overheadLight = new THREE.DirectionalLight(0xFFF8E7, 0.9);
+    overheadLight.position.set(0, 6.0, 1.5);
+    this.scene.add(overheadLight);
+
+    // 5. Dark Ambient Studio Base (Maintains rich near-black floor without total darkness)
+    const ambientLight = new THREE.AmbientLight(0x0E1214, 1.3);
     this.scene.add(ambientLight);
-
-    // 5. Internal Core Point Light with warm golden bloom
-    this.coreLight = new THREE.PointLight(0xFEEFB8, 1.6, 6.0, 1.2);
-    this.coreLight.position.set(0, 0, 0.6);
-    this.rootGroup.add(this.coreLight);
   }
 
-  _createSoftwareCore() {
-    this.coreGroup = new THREE.Group();
-    this.rootGroup.add(this.coreGroup);
+  _loadGLB() {
+    this.loader = new GLTFLoader();
 
-    // A. Dark Graphite Metallic Sphere Core (Brushed satin-metallic finish)
-    const sphereGeo = new THREE.SphereGeometry(1.42, 64, 64);
-    const sphereMat = new THREE.MeshStandardMaterial({
-      color: 0x101416,
-      metalness: 0.85,
-      roughness: 0.38,
-    });
-    this.coreSphere = new THREE.Mesh(sphereGeo, sphereMat);
-    this.coreGroup.add(this.coreSphere);
-
-    // B. Architectural Rotating Lattice & Coordinate Tracks
-    this.latticeGroup = new THREE.Group();
-    this.coreGroup.add(this.latticeGroup);
-
-    const gridMat = new THREE.LineBasicMaterial({
-      color: 0xFEEFB8,
-      transparent: true,
-      opacity: 0.20
-    });
-
-    const createTrack = (radius, y) => {
-      const trackGeo = new THREE.BufferGeometry();
-      const points = [];
-      const segments = 72;
-      for (let i = 0; i <= segments; i++) {
-        const theta = (i / segments) * Math.PI * 2;
-        points.push(new THREE.Vector3(Math.cos(theta) * radius, y, Math.sin(theta) * radius));
+    this.loader.load(
+      this.modelUrl,
+      (gltf) => {
+        if (this.isDestroyed) return;
+        this._onGLBLoaded(gltf);
+      },
+      undefined,
+      (err) => {
+        console.warn('Error loading Kodmates Hero GLB asset, using fallback:', err);
+        this._showFallback();
       }
-      trackGeo.setFromPoints(points);
-      return new THREE.Line(trackGeo, gridMat);
-    };
-
-    // Concentric coordinate rings
-    this.latticeGroup.add(createTrack(1.43, 0));
-    this.latticeGroup.add(createTrack(1.24, 0.72));
-    this.latticeGroup.add(createTrack(1.24, -0.72));
-    this.latticeGroup.add(createTrack(0.86, 1.14));
-    this.latticeGroup.add(createTrack(0.86, -1.14));
-
-    // Angled Architecture Trajectory Ring
-    const orbitMat = new THREE.LineBasicMaterial({
-      color: 0xFEEFB8,
-      transparent: true,
-      opacity: 0.32
-    });
-    const orbitTrack = createTrack(1.72, 0);
-    orbitTrack.material = orbitMat;
-    orbitTrack.rotation.x = 1.05;
-    orbitTrack.rotation.y = 0.45;
-    this.latticeGroup.add(orbitTrack);
-
-    // Small glowing terminal data beads along orbit
-    const beadGeo = new THREE.SphereGeometry(0.035, 12, 12);
-    const beadMat = new THREE.MeshBasicMaterial({ color: 0xFEEFB8 });
-    for (let i = 0; i < 4; i++) {
-      const theta = (i / 4) * Math.PI * 2 + 0.3;
-      const bead = new THREE.Mesh(beadGeo, beadMat);
-      bead.position.set(Math.cos(theta) * 1.72, 0, Math.sin(theta) * 1.72);
-      orbitTrack.add(bead);
-    }
-
-    // C. Integrated Recessed Kodmates K Identity Aperture (Engineered into front surface)
-    this._createIntegratedCoreAperture();
+    );
   }
 
-  _createIntegratedCoreAperture() {
-    this.apertureGroup = new THREE.Group();
-    // Positioned recessed on the front of the sphere, cleanly visible above sphere radius (1.42)
-    this.apertureGroup.position.set(0, 0, 1.43);
+  _onGLBLoaded(gltf) {
+    const heroRoot = gltf.scene.getObjectByName('KODMATES_HERO') || gltf.scene;
+    this.heroModelRoot = heroRoot;
 
-    // 1. Dark metallic outer bezel ring
-    const bezelGeo = new THREE.TorusGeometry(0.38, 0.042, 16, 48);
-    const bezelMat = new THREE.MeshStandardMaterial({
-      color: 0x14181A,
-      metalness: 0.95,
-      roughness: 0.22,
-    });
-    const bezelMesh = new THREE.Mesh(bezelGeo, bezelMat);
-    bezelMesh.position.z = 0.01;
-    this.apertureGroup.add(bezelMesh);
+    // Attach to rootGroup
+    this.rootGroup.add(heroRoot);
 
-    // 2. Chamfer gold rim highlight
-    const chamferGeo = new THREE.RingGeometry(0.32, 0.342, 48);
-    const chamferMat = new THREE.MeshBasicMaterial({
-      color: 0xFEEFB8,
-      transparent: true,
-      opacity: 0.6,
-      side: THREE.DoubleSide
-    });
-    const chamferMesh = new THREE.Mesh(chamferGeo, chamferMat);
-    chamferMesh.position.z = 0.02;
-    this.apertureGroup.add(chamferMesh);
+    // Discover and index hierarchy components
+    this.coreGroup = heroRoot.getObjectByName('CORE');
+    this.modulesGroup = heroRoot.getObjectByName('MODULES');
+    this.connectionsGroup = heroRoot.getObjectByName('CONNECTIONS');
+    this.platformGroup = heroRoot.getObjectByName('PLATFORM');
+    this.environmentGroup = heroRoot.getObjectByName('ENVIRONMENT');
 
-    // 3. Recessed dark aperture face with illuminated Kodmates K mark
-    const discGeo = new THREE.CircleGeometry(0.33, 48);
-    const kTexture = this._createIlluminatedKTexture();
-    const discMat = new THREE.MeshBasicMaterial({
-      map: kTexture,
-      transparent: true,
-      opacity: 0.98,
-      side: THREE.DoubleSide
-    });
-    const discMesh = new THREE.Mesh(discGeo, discMat);
-    discMesh.position.z = 0.015;
-    this.apertureGroup.add(discMesh);
-
-    this.coreGroup.add(this.apertureGroup);
-  }
-
-  _createIlluminatedKTexture() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
-    const ctx = canvas.getContext('2d');
-
-    ctx.clearRect(0, 0, 256, 256);
-
-    // Dark graphite metallic recessed aperture base
-    const grad = ctx.createRadialGradient(128, 128, 10, 128, 128, 128);
-    grad.addColorStop(0, '#101416');
-    grad.addColorStop(0.8, '#080A0B');
-    grad.addColorStop(1, '#050708');
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(128, 128, 124, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Subtle internal warm glow aura
-    const aura = ctx.createRadialGradient(128, 128, 0, 128, 128, 80);
-    aura.addColorStop(0, 'rgba(254, 239, 184, 0.22)');
-    aura.addColorStop(1, 'rgba(254, 239, 184, 0)');
-    ctx.fillStyle = aura;
-    ctx.beginPath();
-    ctx.arc(128, 128, 80, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Kodmates SVG mark [< cleanly integrated
-    ctx.strokeStyle = '#FEEFB8';
-    ctx.lineWidth = 14;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.shadowColor = 'rgba(254, 239, 184, 0.55)';
-    ctx.shadowBlur = 10;
-
-    // Left bracket
-    ctx.beginPath();
-    ctx.moveTo(106, 76);
-    ctx.lineTo(88, 76);
-    ctx.arcTo(74, 76, 74, 90, 14);
-    ctx.lineTo(74, 166);
-    ctx.arcTo(74, 180, 88, 180, 14);
-    ctx.lineTo(106, 180);
-    ctx.stroke();
-
-    // Chevron
-    ctx.beginPath();
-    ctx.moveTo(174, 82);
-    ctx.lineTo(114, 128);
-    ctx.lineTo(174, 174);
-    ctx.stroke();
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.generateMipmaps = true;
-    return texture;
-  }
-
-  _createPhysicalModules() {
-    // 6 physical 3D modules with real 3D depth distribution (varying Z positions)
-    const moduleDefs = [
-      { id: 'web', label: 'WEB', sys: 'MOD // 01', pos: [-2.1, 1.25, 1.35], scale: 1.05 },     // Foreground Left (Z: +1.35)
-      { id: 'android', label: 'ANDROID', sys: 'MOD // 02', pos: [0.25, 2.3, 0.55], scale: 1.0 },  // Mid-top (Z: +0.55)
-      { id: 'cloud', label: 'CLOUD', sys: 'MOD // 03', pos: [2.35, 1.45, -0.85], scale: 0.92 },  // Deep Background Right (Z: -0.85)
-      { id: 'api', label: 'API', sys: 'MOD // 04', pos: [2.45, -0.45, 0.75], scale: 1.02 },     // Foreground Right (Z: +0.75)
-      { id: 'database', label: 'DATABASE', sys: 'MOD // 05', pos: [-2.25, -1.15, 0.45], scale: 0.98 }, // Mid-depth Left (Z: +0.45)
-      { id: 'business', label: 'BUSINESS', sys: 'MOD // 06', pos: [-0.35, -2.25, -0.65], scale: 0.94 }  // Deep Bottom (Z: -0.65)
+    // Index the six technology modules for hover interactivity
+    const moduleNames = [
+      'Module_Web',
+      'Module_Android',
+      'Module_Cloud',
+      'Module_API',
+      'Module_Database',
+      'Module_Business'
     ];
 
-    moduleDefs.forEach((def, index) => {
-      const moduleGroup = new THREE.Group();
-      moduleGroup.position.set(def.pos[0], def.pos[1], def.pos[2]);
-
-      // Physical module dimensions: 0.68 wide x 0.44 high x 0.14 deep
-      const boxGeo = new THREE.BoxGeometry(0.68, 0.44, 0.14);
-      
-      // Dark graphite metallic chassis material
-      const chassisMat = new THREE.MeshStandardMaterial({
-        color: 0x111516,
-        metalness: 0.88,
-        roughness: 0.25,
-      });
-
-      // Front faceplate with micro-engineered hardware graphics
-      const faceTexture = this._createModuleFaceTexture(def.label, def.sys, def.id);
-      const faceMat = new THREE.MeshBasicMaterial({ map: faceTexture });
-
-      const materials = [
-        chassisMat, chassisMat, chassisMat, chassisMat,
-        faceMat, chassisMat // +Z face has the faceplate texture
-      ];
-
-      const chassisMesh = new THREE.Mesh(boxGeo, materials);
-      moduleGroup.add(chassisMesh);
-
-      // Chamfer wireframe edge highlight in warm ivory/gold
-      const edges = new THREE.EdgesGeometry(boxGeo);
-      const edgeMat = new THREE.LineBasicMaterial({
-        color: 0xFEEFB8,
-        transparent: true,
-        opacity: 0.42
-      });
-      const wireframe = new THREE.LineSegments(edges, edgeMat);
-      moduleGroup.add(wireframe);
-
-      // Miniature status LED on the chassis corner
-      const ledGeo = new THREE.SphereGeometry(0.025, 8, 8);
-      const ledMat = new THREE.MeshBasicMaterial({ color: 0xFEEFB8 });
-      const ledMesh = new THREE.Mesh(ledGeo, ledMat);
-      ledMesh.position.set(0.26, 0.14, 0.075);
-      moduleGroup.add(ledMesh);
-
-      this.rootGroup.add(moduleGroup);
-
-      this.nodes.push({
-        group: moduleGroup,
-        basePos: new THREE.Vector3(...def.pos),
-        phase: index * 1.1,
-        speed: 1.1 + index * 0.12,
-        id: def.id
-      });
+    moduleNames.forEach((name) => {
+      const modObj = heroRoot.getObjectByName(name);
+      if (modObj) {
+        this.moduleObjects.set(name, modObj);
+        this.moduleBaseScales.set(name, modObj.scale.clone());
+        this.moduleHoverStates.set(name, {
+          targetScale: 1.0,
+          currentScale: 1.0,
+          baseEmissive: this._extractEmissive(modObj)
+        });
+      }
     });
-  }
 
-  _createModuleFaceTexture(label, sysCode, id) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 340;
-    canvas.height = 220;
-    const ctx = canvas.getContext('2d');
+    // Discover data pulses along conduits
+    heroRoot.traverse((child) => {
+      if (child.isMesh) {
+        // Ensure proper tone mapping on all PBR materials
+        if (Array.isArray(child.material)) {
+          child.material.forEach((m) => { m.toneMapped = true; });
+        } else if (child.material) {
+          child.material.toneMapped = true;
+        }
 
-    // Dark matte chassis surface
-    ctx.fillStyle = '#0E1213';
-    ctx.fillRect(0, 0, 340, 220);
+        if (child.name.includes('_Pulse')) {
+          this.pulseObjects.push(child);
+        }
+      }
+    });
 
-    // Subtle beveled inner border
-    ctx.strokeStyle = 'rgba(254, 239, 184, 0.35)';
-    ctx.lineWidth = 3;
-    this._roundRect(ctx, 6, 6, 328, 208, 14);
-    ctx.stroke();
-
-    // Top Header: System code & active green/gold micro-dot
-    ctx.fillStyle = 'rgba(254, 239, 184, 0.55)';
-    ctx.font = '600 13px "Inter", monospace';
-    ctx.textAlign = 'left';
-    ctx.fillText(sysCode, 24, 34);
-
-    // Active status indicator dot
-    ctx.fillStyle = '#FEEFB8';
-    ctx.beginPath();
-    ctx.arc(310, 28, 4, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Subtle divider line
-    ctx.strokeStyle = 'rgba(254, 239, 184, 0.15)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(24, 46);
-    ctx.lineTo(316, 46);
-    ctx.stroke();
-
-    // Hardware icon
-    ctx.save();
-    ctx.translate(60, 118);
-    this._drawHardwareIcon(ctx, id);
-    ctx.restore();
-
-    // Primary Module Label
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '700 28px "Plus Jakarta Sans", sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.letterSpacing = '1.5px';
-    ctx.fillText(label, 110, 118);
-
-    // Bottom Subtext: Engineered protocol status
-    ctx.fillStyle = 'rgba(240, 242, 238, 0.45)';
-    ctx.font = '500 12px "Inter", monospace';
-    ctx.fillText('ONLINE // READY', 24, 188);
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.generateMipmaps = true;
-    return texture;
-  }
-
-  _drawHardwareIcon(ctx, id) {
-    ctx.strokeStyle = '#FEEFB8';
-    ctx.fillStyle = '#FEEFB8';
-    ctx.lineWidth = 2.8;
-
-    switch (id) {
-      case 'web':
-        ctx.strokeRect(-18, -14, 36, 28);
-        ctx.beginPath();
-        ctx.moveTo(-18, -5);
-        ctx.lineTo(18, -5);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(-11, -9.5, 1.8, 0, Math.PI * 2);
-        ctx.arc(-4, -9.5, 1.8, 0, Math.PI * 2);
-        ctx.fill();
-        break;
-      case 'android':
-        ctx.strokeRect(-12, -16, 24, 32);
-        ctx.beginPath();
-        ctx.arc(0, 10, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(-6, -11);
-        ctx.lineTo(6, -11);
-        ctx.stroke();
-        break;
-      case 'cloud':
-        ctx.beginPath();
-        ctx.arc(-6, 2, 9, Math.PI * 0.5, Math.PI * 1.5);
-        ctx.arc(5, -4, 11, Math.PI * 1.0, Math.PI * 1.9);
-        ctx.arc(12, 4, 7, Math.PI * 1.5, Math.PI * 0.5);
-        ctx.closePath();
-        ctx.stroke();
-        break;
-      case 'api':
-        ctx.beginPath();
-        ctx.arc(-11, 0, 4.5, 0, Math.PI * 2);
-        ctx.arc(11, 0, 4.5, 0, Math.PI * 2);
-        ctx.arc(0, 0, 4.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(-7, 0);
-        ctx.lineTo(-4, 0);
-        ctx.moveTo(4, 0);
-        ctx.lineTo(7, 0);
-        ctx.stroke();
-        break;
-      case 'database':
-        ctx.beginPath();
-        ctx.ellipse(0, -9, 16, 5.5, 0, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(-16, -9);
-        ctx.lineTo(-16, 9);
-        ctx.ellipse(0, 9, 16, 5.5, 0, 0, Math.PI);
-        ctx.lineTo(16, -9);
-        ctx.stroke();
-        break;
-      case 'business':
-      default:
-        ctx.strokeRect(-16, -14, 14, 14);
-        ctx.strokeRect(2, -14, 14, 14);
-        ctx.strokeRect(-16, 4, 14, 14);
-        ctx.strokeRect(2, 4, 14, 14);
-        break;
+    // Compare with website background:
+    // When the 3D scene loads with its own environment, reduce HTML ambient landscape
+    // to avoid duplicate mountain silhouettes
+    if (this.heroSectionEl) {
+      const ambientLandscape = this.heroSectionEl.querySelector('.hero-ambient-landscape');
+      if (ambientLandscape) {
+        ambientLandscape.style.transition = 'opacity 0.8s ease';
+        ambientLandscape.style.opacity = '0.04'; // Subtle depth without duplicate silhouette clash
+      }
     }
+
+    // Hide fallback and fade in canvas gently
+    if (this.fallbackEl) {
+      this.fallbackEl.style.display = 'none';
+    }
+
+    if (this.renderer && this.renderer.domElement) {
+      this.renderer.domElement.style.opacity = '1';
+    }
+
+    this.isLoaded = true;
+    this._animate();
   }
 
-  _roundRect(ctx, x, y, width, height, radius) {
-    ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
-    ctx.closePath();
-  }
-
-  _createDataConduits() {
-    this.nodes.forEach((node) => {
-      const modulePos = node.basePos;
-      // Core docking port on the surface of the sphere
-      const corePort = modulePos.clone().normalize().multiplyScalar(1.42);
-
-      // 3D architectural conduit spline
-      const midPoint = modulePos.clone().lerp(corePort, 0.45);
-      midPoint.x += (Math.random() - 0.5) * 0.35;
-      midPoint.y += (Math.random() - 0.5) * 0.35;
-      midPoint.z += 0.4;
-
-      const curve = new THREE.QuadraticBezierCurve3(modulePos, midPoint, corePort);
-      const points = curve.getPoints(42);
-      const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
-      
-      const lineMat = new THREE.LineBasicMaterial({
-        color: 0xFEEFB8,
-        transparent: true,
-        opacity: 0.28
-      });
-
-      const conduitLine = new THREE.Line(lineGeo, lineMat);
-      this.rootGroup.add(conduitLine);
-
-      // Terminal docking point on the core
-      const portGeo = new THREE.SphereGeometry(0.045, 12, 12);
-      const portMat = new THREE.MeshBasicMaterial({ color: 0xFEEFB8 });
-      const portMesh = new THREE.Mesh(portGeo, portMat);
-      portMesh.position.copy(corePort);
-      this.coreGroup.add(portMesh);
-
-      // Moving data packet along the conduit
-      const pulseGeo = new THREE.SphereGeometry(0.04, 10, 10);
-      const pulseMat = new THREE.MeshBasicMaterial({ color: 0xFEEFB8 });
-      const pulseMesh = new THREE.Mesh(pulseGeo, pulseMat);
-      this.rootGroup.add(pulseMesh);
-
-      this.connections.push({
-        curve,
-        conduitLine,
-        pulseMesh,
-        progress: Math.random(),
-        speed: 0.22 + Math.random() * 0.15
-      });
-    });
+  _extractEmissive(obj) {
+    if (obj.material) {
+      if (Array.isArray(obj.material)) {
+        return obj.material.map(m => (m.emissiveIntensity !== undefined ? m.emissiveIntensity : 1.0));
+      }
+      return obj.material.emissiveIntensity !== undefined ? obj.material.emissiveIntensity : 1.0;
+    }
+    return 1.0;
   }
 
   _bindEvents() {
     window.addEventListener('mousemove', this._onMouseMove, { passive: true });
     window.addEventListener('scroll', this._onScroll, { passive: true });
     window.addEventListener('resize', this._onResize, { passive: true });
+
+    if (this.container) {
+      this.container.addEventListener('pointermove', this._onPointerMove, { passive: true });
+      this.container.addEventListener('pointerleave', this._onPointerLeave, { passive: true });
+    }
+
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (motionQuery.addEventListener) {
+      motionQuery.addEventListener('change', this._onMotionPreferenceChange);
+    }
+  }
+
+  _onMotionPreferenceChange(e) {
+    this.prefersReducedMotion = e.matches;
+    if (this.prefersReducedMotion && this.rootGroup) {
+      this.rootGroup.rotation.set(0, 0, 0);
+      this.rootGroup.position.set(0, 0, 0);
+    }
   }
 
   _onMouseMove(event) {
+    // Subtle mouse parallax:
+    // Maximum ±2 degrees rotation X (~0.035 rad), ±3 degrees rotation Y (~0.052 rad)
     const normX = (event.clientX / window.innerWidth) * 2 - 1;
     const normY = -(event.clientY / window.innerHeight) * 2 + 1;
-    this.mouse.targetX = normX * 0.24;
-    this.mouse.targetY = normY * 0.18;
+    this.mouse.targetX = normX * 0.052; // ±3 deg
+    this.mouse.targetY = normY * 0.035; // ±2 deg
+  }
+
+  _onPointerMove(event) {
+    // Don't raycast on touch devices to avoid sticky hover states
+    if (event.pointerType === 'touch') return;
+    if (!this.container || !this.isLoaded) return;
+
+    const rect = this.container.getBoundingClientRect();
+    this.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    this.pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    this._checkRaycast();
+  }
+
+  _onPointerLeave() {
+    this.pointer.set(-999, -999);
+    this._clearHover();
+  }
+
+  _checkRaycast() {
+    if (!this.camera || !this.isLoaded || this.moduleObjects.size === 0) return;
+
+    this.raycaster.setFromCamera(this.pointer, this.camera);
+    const targets = Array.from(this.moduleObjects.values());
+    const intersects = this.raycaster.intersectObjects(targets, true);
+
+    if (intersects.length > 0) {
+      // Find the parent module
+      let hit = intersects[0].object;
+      let matchedName = null;
+
+      while (hit && hit !== this.rootGroup && hit !== this.scene) {
+        if (this.moduleObjects.has(hit.name)) {
+          matchedName = hit.name;
+          break;
+        }
+        hit = hit.parent;
+      }
+
+      if (matchedName) {
+        this._setHover(matchedName);
+        return;
+      }
+    }
+
+    this._clearHover();
+  }
+
+  _setHover(name) {
+    if (this.hoveredModule === name) return;
+    this.hoveredModule = name;
+
+    this.moduleHoverStates.forEach((state, modName) => {
+      state.targetScale = modName === name ? 1.042 : 1.0;
+    });
+
+    if (this.container) {
+      this.container.style.cursor = 'pointer';
+    }
+  }
+
+  _clearHover() {
+    if (!this.hoveredModule) return;
+    this.hoveredModule = null;
+
+    this.moduleHoverStates.forEach((state) => {
+      state.targetScale = 1.0;
+    });
+
+    if (this.container) {
+      this.container.style.cursor = 'default';
+    }
   }
 
   _onScroll() {
-    this.scroll.targetY = window.scrollY * 0.0006;
+    // Subtle scroll-linked Hero depth behavior
+    this.scroll.targetY = window.scrollY * 0.00045;
   }
 
   _onResize() {
     if (!this.container || !this.renderer || !this.camera) return;
     const width = this.container.clientWidth;
     const height = this.container.clientHeight;
-    this.camera.aspect = width / height;
-    this.camera.updateProjectionMatrix();
+
+    this._updateCameraFraming(width, height);
     this.renderer.setSize(width, height);
   }
 
   _animate() {
+    if (this.isDestroyed) return;
     this.animId = requestAnimationFrame(this._animate);
 
     const delta = this.clock.getDelta();
     const time = this.clock.getElapsedTime();
 
-    if (!this.prefersReducedMotion) {
-      // Rotate the architectural coordinate tracks and orbital lattice
-      if (this.latticeGroup) {
-        this.latticeGroup.rotation.y += delta * 0.12;
-      }
+    if (this.isLoaded && this.rootGroup) {
+      if (!this.prefersReducedMotion) {
+        // Smooth parallax interpolation (lerp)
+        this.mouse.x += (this.mouse.targetX - this.mouse.x) * 0.055;
+        this.mouse.y += (this.mouse.targetY - this.mouse.y) * 0.055;
+        this.scroll.y += (this.scroll.targetY - this.scroll.y) * 0.055;
 
-      // Mouse parallax smooth dampening
-      this.mouse.x += (this.mouse.targetX - this.mouse.x) * 0.045;
-      this.mouse.y += (this.mouse.targetY - this.mouse.y) * 0.045;
-      this.scroll.y += (this.scroll.targetY - this.scroll.y) * 0.045;
+        // Subtle restrained idle breathing sway (0.06 rad/sec, K remains legible and facing front)
+        const idleSwayY = Math.sin(time * 0.38) * 0.022; // ±1.2 degrees
+        const idleFloatY = Math.sin(time * 0.55) * 0.04;
 
-      this.rootGroup.rotation.y = this.mouse.x + this.scroll.y * 1.2;
-      this.rootGroup.rotation.x = -this.mouse.y;
-      this.rootGroup.position.y = this.scroll.y * 0.6;
+        this.rootGroup.rotation.y = this.mouse.x + idleSwayY + (this.scroll.y * 0.6);
+        this.rootGroup.rotation.x = -this.mouse.y;
+        this.rootGroup.position.y = idleFloatY + (this.scroll.y * 0.5);
 
-      // Independent micro-floating for each physical module
-      this.nodes.forEach((node) => {
-        const floatOffset = Math.sin(time * node.speed + node.phase) * 0.045;
-        node.group.position.y = node.basePos.y + floatOffset;
-        node.group.rotation.y = Math.sin(time * 0.5 + node.phase) * 0.03;
-      });
+        // Smooth module hover scaling
+        this.moduleObjects.forEach((modObj, name) => {
+          const state = this.moduleHoverStates.get(name);
+          const baseScale = this.moduleBaseScales.get(name);
+          if (state && baseScale) {
+            state.currentScale += (state.targetScale - state.currentScale) * 0.12;
+            modObj.scale.set(
+              baseScale.x * state.currentScale,
+              baseScale.y * state.currentScale,
+              baseScale.z * state.currentScale
+            );
+          }
+        });
 
-      // Data pulses traveling through conduits
-      this.connections.forEach((conn) => {
-        conn.progress += delta * conn.speed;
-        if (conn.progress > 1) conn.progress = 0;
-        const pos = conn.curve.getPoint(conn.progress);
-        conn.pulseMesh.position.copy(pos);
-      });
-
-      // Subtle breathing on internal core light and aperture glow
-      if (this.coreLight) {
-        this.coreLight.intensity = 1.6 + Math.sin(time * 1.8) * 0.3;
+        // Subtle breathing pulse glow on connection beads
+        if (this.pulseObjects.length > 0) {
+          const pulseIntensity = 1.0 + Math.sin(time * 2.2) * 0.25;
+          this.pulseObjects.forEach((pulse) => {
+            if (pulse.material && pulse.material.emissiveIntensity !== undefined) {
+              pulse.material.emissiveIntensity = pulseIntensity;
+            }
+          });
+        }
+      } else {
+        // Reduced motion: purely static
+        this.rootGroup.rotation.set(0, 0, 0);
+        this.rootGroup.position.set(0, 0, 0);
       }
     }
 
-    this.renderer.render(this.scene, this.camera);
+    if (this.renderer && this.scene && this.camera) {
+      this.renderer.render(this.scene, this.camera);
+    }
   }
 
   destroy() {
+    this.isDestroyed = true;
     if (this.animId) cancelAnimationFrame(this.animId);
+
     window.removeEventListener('mousemove', this._onMouseMove);
     window.removeEventListener('scroll', this._onScroll);
     window.removeEventListener('resize', this._onResize);
 
-    if (this.renderer && this.renderer.domElement) {
-      this.renderer.domElement.remove();
+    if (this.container) {
+      this.container.removeEventListener('pointermove', this._onPointerMove);
+      this.container.removeEventListener('pointerleave', this._onPointerLeave);
+    }
+
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (motionQuery.removeEventListener) {
+      motionQuery.removeEventListener('change', this._onMotionPreferenceChange);
+    }
+
+    // Traverse and dispose Three.js resources
+    if (this.scene) {
+      this.scene.traverse((obj) => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (Array.isArray(obj.material)) {
+            obj.material.forEach((m) => m.dispose());
+          } else {
+            obj.material.dispose();
+          }
+        }
+      });
+    }
+
+    if (this.renderer) {
+      if (this.renderer.domElement && this.renderer.domElement.parentNode) {
+        this.renderer.domElement.parentNode.removeChild(this.renderer.domElement);
+      }
       this.renderer.dispose();
     }
   }

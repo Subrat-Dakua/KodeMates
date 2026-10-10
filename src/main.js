@@ -4,12 +4,15 @@ import './styles/header.css';
 import './styles/hero.css';
 import './styles/projects.css';
 import './styles/project-case-study.css';
+import './styles/services.css';
 import { initHeader } from './components/Header.js';
 import { initHero } from './components/Hero.js';
 import { initProjectsPage } from './pages/ProjectsPage.js';
 import { initProjectCaseStudyPage } from './pages/ProjectCaseStudyPage.js';
+import { initServicesPage } from './pages/ServicesPage.js';
 import { getProjectBySlug } from './data/projects/index.js';
 import { resetProjectSEO } from './components/projects/ProjectSEO.js';
+import { resetServicesSEO } from './components/services/ServicesSEO.js';
 
 // Step 01: Initialize Kodmates Header (Locked)
 const header = initHeader({ activePage: 'Home' });
@@ -17,9 +20,10 @@ const header = initHeader({ activePage: 'Home' });
 // Step 02: Initialize Kodmates Homepage Hero & 3D Ecosystem
 const hero = initHero();
 
-// Step 03: Minimal Projects & Case Study Route Integration (Phases 03 & 07)
+// Step 03: Projects, Case Study & Services Route Integration
 let activeProjectsPage = null;
 let activeCaseStudyPage = null;
+let activeServicesPage = null;
 
 function parseRoute() {
   const path = window.location.pathname;
@@ -32,6 +36,9 @@ function parseRoute() {
   }
   if (hash === '#projects' || hash === '#/projects') {
     return { type: 'projects-list' };
+  }
+  if (hash === '#services' || hash === '#/services') {
+    return { type: 'services' };
   }
 
   // Pathname-based route check
@@ -47,6 +54,10 @@ function parseRoute() {
     return { type: 'projects-list' };
   }
 
+  if (path === '/services' || path === '/services/') {
+    return { type: 'services' };
+  }
+
   return { type: 'home' };
 }
 
@@ -55,10 +66,30 @@ function renderRoute() {
   const heroEl = document.getElementById('hero');
   const mainContent = document.getElementById('main-content');
 
-  if (route.type === 'case-study') {
+  if (route.type === 'services') {
+    header.setActivePage('Services');
+    if (heroEl) heroEl.style.display = 'none';
+
+    if (activeProjectsPage) {
+      activeProjectsPage.destroy();
+      activeProjectsPage = null;
+    }
+    if (activeCaseStudyPage) {
+      activeCaseStudyPage.destroy();
+      activeCaseStudyPage = null;
+    }
+    if (!activeServicesPage && mainContent) {
+      activeServicesPage = initServicesPage({ target: mainContent });
+    }
+  } else if (route.type === 'case-study') {
     header.setActivePage('Projects');
     if (heroEl) heroEl.style.display = 'none';
 
+    if (activeServicesPage) {
+      activeServicesPage.destroy();
+      activeServicesPage = null;
+      resetServicesSEO();
+    }
     if (activeProjectsPage) {
       activeProjectsPage.destroy();
       activeProjectsPage = null;
@@ -80,6 +111,11 @@ function renderRoute() {
     header.setActivePage('Projects');
     if (heroEl) heroEl.style.display = 'none';
 
+    if (activeServicesPage) {
+      activeServicesPage.destroy();
+      activeServicesPage = null;
+      resetServicesSEO();
+    }
     if (activeCaseStudyPage) {
       activeCaseStudyPage.destroy();
       activeCaseStudyPage = null;
@@ -89,6 +125,11 @@ function renderRoute() {
     }
   } else {
     header.setActivePage('Home');
+    if (activeServicesPage) {
+      activeServicesPage.destroy();
+      activeServicesPage = null;
+      resetServicesSEO();
+    }
     if (activeProjectsPage) {
       activeProjectsPage.destroy();
       activeProjectsPage = null;
@@ -116,17 +157,23 @@ function setupNavigation() {
 
     if (
       href.startsWith('/projects') ||
+      href.startsWith('/services') ||
       href === '/' ||
       href === '#projects' ||
       href === '#/projects' ||
       href.startsWith('#/projects/') ||
+      href === '#services' ||
+      href === '#/services' ||
       targetId === 'projects' ||
+      targetId === 'services' ||
       targetId === 'home'
     ) {
       e.preventDefault();
       let destination = href;
       if (href === '#projects' || href === '#/projects' || targetId === 'projects') {
         destination = '/projects';
+      } else if (href === '#services' || href === '#/services' || targetId === 'services') {
+        destination = '/services';
       } else if (href === '#home' || targetId === 'home') {
         destination = '/';
       }

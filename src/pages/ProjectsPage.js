@@ -60,13 +60,13 @@ export class ProjectsPage {
         <!-- Compact Page Hero -->
         <header class="projects-hero" aria-labelledby="projects-hero-title">
           <div class="projects-hero__container">
-            <div class="projects-hero__eyebrow">OUR WORK</div>
+            <div class="projects-hero__eyebrow">SELECTED PORTFOLIO</div>
             <h1 class="projects-hero__title" id="projects-hero-title">
-              Real Solutions.<br />
-              <span class="projects-hero__title-accent">Real Impact.</span>
+              Selected Work.<br />
+              <span class="projects-hero__title-accent">Real Products. Thoughtful Engineering.</span>
             </h1>
             <p class="projects-hero__description">
-              Explore software systems and digital products built to solve real business problems.
+              Explore production software systems, mobile applications, and digital platforms engineered for real-world operations.
             </p>
           </div>
         </header>

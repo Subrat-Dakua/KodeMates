@@ -1,7 +1,7 @@
 /**
  * KodMates Services Data
  * 
- * Central data architecture for the streamlined, premium Services Page.
+ * Central data architecture for the refined, visual Services Page.
  * Strictly grounded in verified engineering capabilities and active projects (GatePass, KoroCraft, ASUTI).
  */
 
@@ -21,7 +21,7 @@ export const servicesData = {
     }
   },
 
-  // Consolidated 6 Core Services with Collapsed & Expandable Detail
+  // 6 Core Services with Collapsed, Expandable Detail & Visual Showcase Mapping
   coreServices: [
     {
       id: 'web-development',
@@ -36,6 +36,8 @@ export const servicesData = {
         'E-Commerce & D2C Storefronts',
         'Sub-second Core Web Vitals'
       ],
+      showcaseHighlight: 'RESPONSIVE WEB PLATFORMS',
+      showcaseTagline: 'Engineered for sub-second Core Web Vitals, conversion velocity, and effortless scaling.',
       expandedDetails: {
         problem:
           'Slow loading times, brittle architectures, and template bloat lead to high bounce rates, low search visibility, and accumulating technical debt.',
@@ -63,6 +65,8 @@ export const servicesData = {
         'CameraX Optical QR & Barcode Scanning',
         'Offline Caching & Automatic Sync'
       ],
+      showcaseHighlight: 'NATIVE ANDROID & CAMERAX SCANNING',
+      showcaseTagline: 'Hardware-integrated optical verification and robust offline-first synchronization.',
       expandedDetails: {
         problem:
           'Field personnel and customers struggle when forced to use fragile mobile web pages over fluctuating networks or physical checkpoints.',
@@ -90,6 +94,8 @@ export const servicesData = {
         'Low-Friction Checkout & Form Flows',
         'WCAG 2.1 AA Accessibility'
       ],
+      showcaseHighlight: 'DESIGN SYSTEMS & ERGONOMIC FLOWS',
+      showcaseTagline: 'Precision tokens, fluid typography, and accessible high-conversion checkout flows.',
       expandedDetails: {
         problem:
           'Generic templates look interchangeable, while cluttered interfaces generate user confusion, friction, and abandonment at key workflow stages.',
@@ -117,6 +123,8 @@ export const servicesData = {
         'Stateless Token Auth (Sanctum / JWT)',
         'Multi-Tenant Data Isolation'
       ],
+      showcaseHighlight: 'HIGH-THROUGHPUT API ENGINES',
+      showcaseTagline: 'Deterministic REST contracts, multi-tenant middleware, and signed JWT/Sanctum security.',
       expandedDetails: {
         problem:
           'Fragmented databases and unvalidated endpoints lead to data collisions, security vulnerabilities, and system stalls during traffic surges.',
@@ -144,6 +152,8 @@ export const servicesData = {
         'Redis Caching & Asynchronous Queues',
         'Docker Containerized Environments'
       ],
+      showcaseHighlight: 'FAULT-TOLERANT CLOUD ARCHITECTURE',
+      showcaseTagline: 'Relational data modeling, Redis asynchronous queues, and automated Docker rollouts.',
       expandedDetails: {
         problem:
           'Unindexed database queries, memory leaks, and single-point-of-failure hosting cause sudden downtime, sluggish latency, and lost revenue.',
@@ -171,6 +181,8 @@ export const servicesData = {
         'Supplier API & Order Synchronization',
         'Tamper-Evident QR Code Verification'
       ],
+      showcaseHighlight: 'OPERATIONAL PLATFORMS & AUTOMATION',
+      showcaseTagline: 'Perimeter access gates, supplier order sync, and real-time forensic audit logging.',
       expandedDetails: {
         problem:
           'Manual phone verifications, paper logs, and spreadsheet inventory tracking cause operational delays, security blindspots, and hundreds of lost labor hours.',
@@ -215,46 +227,60 @@ export const servicesData = {
     }
   ],
 
-  // Seven-Stage Engineering Lifecycle
+  // Seven-Stage Engineering Lifecycle with Client Checkpoints
   process: [
     {
       step: '01',
       title: 'Discovery',
-      description: 'Review operational bottlenecks, technical constraints, and measurable business goals before coding.'
+      icon: 'discovery',
+      description: 'Review operational bottlenecks, technical constraints, and measurable business goals before coding.',
+      checkpoint: 'Requirements Clarification & Scope Alignment'
     },
     {
       step: '02',
       title: 'Planning',
-      description: 'Define relational database schemas, REST API contracts, and deliverable milestones to prevent scope creep.'
+      icon: 'planning',
+      description: 'Define relational database schemas, REST API contracts, and deliverable milestones to prevent scope creep.',
+      checkpoint: 'Architecture Blueprint & Milestone Sign-Off'
     },
     {
       step: '03',
       title: 'Design',
-      description: 'Craft responsive wireframes, token hierarchies, and interactive component prototypes tailored to your users.'
+      icon: 'design',
+      description: 'Craft responsive wireframes, token hierarchies, and interactive component prototypes tailored to your users.',
+      checkpoint: 'Interactive Prototype & Design Review'
     },
     {
       step: '04',
       title: 'Development',
-      description: 'Implement frontend, backend, and mobile applications in focused sprints with strict code standards.'
+      icon: 'development',
+      description: 'Implement frontend, backend, and mobile applications in focused sprints with strict code standards.',
+      checkpoint: 'Sprint Milestone Demos & Progress Reviews'
     },
     {
       step: '05',
       title: 'Testing',
-      description: 'Validate responsive rendering (320px–4K), offline states, API contracts, and zero layout shift.'
+      icon: 'testing',
+      description: 'Validate responsive rendering (320px–4K), offline states, API contracts, and zero layout shift.',
+      checkpoint: 'Acceptance Testing & Security Audits'
     },
     {
       step: '06',
       title: 'Deployment',
-      description: 'Provision secure servers, databases, SSL certificates, and release with real-time telemetry.'
+      icon: 'deployment',
+      description: 'Provision secure servers, databases, SSL certificates, and release with real-time telemetry.',
+      checkpoint: 'Production Rollout & System Handover'
     },
     {
       step: '07',
       title: 'Support',
-      description: 'Provide post-launch continuity, monitoring, dependency maintenance, and enhancements as agreed.'
+      icon: 'support',
+      description: 'Provide post-launch continuity, monitoring, dependency maintenance, and enhancements as agreed.',
+      checkpoint: 'Post-Launch Continuity & Retainer SLA'
     }
   ],
 
-  // 3 High-Impact Value Proposition Cards (Prioritized from repository principles)
+  // 3 High-Impact Value Proposition Cards
   whyChooseUs: [
     {
       number: '01',
@@ -276,7 +302,7 @@ export const servicesData = {
     }
   ],
 
-  // Proven Execution in Production (Featured Case Studies)
+  // Proven Execution in Production (Featured Case Studies with Visual Preview Data)
   featuredCaseStudies: [
     {
       slug: 'gatepass',
@@ -286,7 +312,8 @@ export const servicesData = {
       description:
         'Perimeter security platform uniting a Laravel 11 REST API, administrative web portal, and native Android app with CameraX QR validation.',
       tech: ['Laravel 11', 'React', 'Kotlin', 'CameraX', 'Sanctum'],
-      route: '/projects/gatepass'
+      route: '/projects/gatepass',
+      previewType: 'gatepass'
     },
     {
       slug: 'korocraft',
@@ -296,7 +323,8 @@ export const servicesData = {
       description:
         'Automated fulfillment engine integrating supplier APIs, real-time two-way stock synchronization, and sub-second webhook order ingestion.',
       tech: ['Node.js', 'TypeScript', 'React', 'Redis Queues', 'PostgreSQL'],
-      route: '/projects/korocraft'
+      route: '/projects/korocraft',
+      previewType: 'korocraft'
     },
     {
       slug: 'asuti',
@@ -306,7 +334,8 @@ export const servicesData = {
       description:
         'High-performance direct-to-consumer digital storefront engineered with serene editorial aesthetics, sub-second page loads, and a dynamic cart.',
       tech: ['Vanilla ESNext', 'Modular CSS', 'Headless E-Commerce', 'Core Web Vitals'],
-      route: '/projects/asuti'
+      route: '/projects/asuti',
+      previewType: 'asuti'
     }
   ],
 

@@ -8,13 +8,15 @@
 .hero-section {
   position: relative;
   width: 100%;
-  min-height: calc(100vh - var(--km-header-height));
+  height: calc(100vh - var(--km-header-height));
+  min-height: 620px;
+  max-height: 1080px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   background-color: var(--km-bg-canvas);
   overflow: hidden;
-  padding: 16px 0 28px 0;
+  padding: 0;
 }
 
 /* Subtle Warm Atmospheric Bloom behind the 3D Ecosystem */
@@ -57,29 +59,29 @@
   object-position: center bottom;
 }
 
-/* Centered Max-Width Hero Container */
+/* Centered Max-Width Hero Container (scales naturally to 1520px on wide screens) */
 .hero-container {
   position: relative;
-  max-width: var(--km-header-max-width);
+  max-width: min(1520px, 92vw);
   width: 100%;
+  height: 100%;
   margin: 0 auto;
   padding: 0 var(--km-header-padding-x);
   z-index: 1;
-  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
-/* Main Grid Layout (Left ~46%, Right ~54%) Centered Vertically */
+/* Main Grid Layout (Left ~45%, Right ~55%) Filling Available Viewport Height */
 .hero-main-grid {
+  flex: 1;
+  min-height: 0;
   display: grid;
-  grid-template-columns: 46% 54%;
+  grid-template-columns: 45% 55%;
   align-items: center;
-  gap: 24px;
-  min-height: 530px;
-  margin-top: auto;
-  margin-bottom: auto;
+  gap: 20px;
+  padding: 6px 0 0 0;
 }
 
 /* ==================================================
@@ -182,7 +184,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 550px;
+  height: 100%;
+  min-height: 0;
   z-index: 2;
 }
 
@@ -228,8 +231,8 @@
    ================================================== */
 .hero-capabilities-container {
   width: 100%;
-  margin-top: 18px;
-  padding-top: 24px;
+  flex-shrink: 0;
+  padding: 14px 0 16px 0;
   background-image: linear-gradient(
     90deg,
     transparent 0%,
@@ -319,6 +322,9 @@
 
 @media (max-width: 900px) {
   .hero-section {
+    height: auto;
+    min-height: calc(100vh - var(--km-header-height));
+    max-height: none;
     padding: 20px 0 32px 0;
   }
 
@@ -326,6 +332,7 @@
     grid-template-columns: 1fr;
     text-align: center;
     gap: 24px;
+    flex: initial;
   }
 
   .hero-content-col {
@@ -343,6 +350,11 @@
 
   .hero-visual-col {
     height: 420px;
+  }
+
+  .hero-capabilities-container {
+    margin-top: 24px;
+    padding: 18px 0 12px 0;
   }
 
   .hero-capabilities-track {

@@ -34,7 +34,7 @@ button:focus-visible {
 .page-viewport {
   position: relative;
   width: 100%;
-  min-height: 200vh;
+  min-height: 100vh;
   background-color: var(--km-bg-canvas);
   background-image: 
     radial-gradient(1100px 380px at 50% 0%, rgba(254, 239, 184, 0.038) 0%, rgba(254, 239, 184, 0.012) 45%, transparent 75%),

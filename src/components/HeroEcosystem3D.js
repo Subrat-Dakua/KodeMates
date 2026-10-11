@@ -1,14 +1,15 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 /**
  * Kodmates Interactive 3D Software Ecosystem
- * Step 02B: Final Approved Blender GLB Integration
- * 
- * Loads the production GLB asset (/assets/kodmates_hero.glb),
- * sets up restrained studio lighting to honor approved Cycles renders,
- * provides smooth mouse parallax, restrained idle sway, subtle module hover raycasting,
- * scroll depth linkage, prefers-reduced-motion support, and graceful fallback handling.
+ * Step 02B Visual Correction Pass:
+ * - Substantially increased visual scale on desktop (fills ~48-52% hero width)
+ * - Studio lighting & PMREM reflection environment revealing dark graphite PBR materials
+ * - Optically centered ecosystem with platform grounded above capability row
+ * - All six modules clearly legible and interactive
+ * - Seamless desktop framing fitting Header + Hero + Capability Row within first viewport
  */
 export class HeroEcosystem3D {
   constructor(options = {}) {
@@ -23,6 +24,7 @@ export class HeroEcosystem3D {
     this.scene = null;
     this.camera = null;
     this.renderer = null;
+    this.pmremGenerator = null;
     this.loader = null;
 
     // Hierarchy handles
@@ -52,6 +54,9 @@ export class HeroEcosystem3D {
     this.scroll = { y: 0, targetY: 0 };
     this.isLoaded = false;
     this.isDestroyed = false;
+    this.isVisible = true;
+    this.observer = null;
+    this.pointerNeedsCheck = false;
 
     // Bound listeners
     this._onMouseMove = this._onMouseMove.bind(this);
@@ -60,6 +65,7 @@ export class HeroEcosystem3D {
     this._onScroll = this._onScroll.bind(this);
     this._onResize = this._onResize.bind(this);
     this._onMotionPreferenceChange = this._onMotionPreferenceChange.bind(this);
+    this._onVisibilityChange = this._onVisibilityChange.bind(this);
     this._animate = this._animate.bind(this);
   }
 
@@ -105,14 +111,13 @@ export class HeroEcosystem3D {
   }
 
   _setupScene() {
-    const width = this.container.clientWidth || 640;
-    const height = this.container.clientHeight || 560;
+    const width = this.container.clientWidth || 720;
+    const height = this.container.clientHeight || 620;
 
     this.scene = new THREE.Scene();
 
     // Perspective camera framing the ecosystem
-    this.camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 100);
-    this._updateCameraFraming(width, height);
+    this.camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
 
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -122,10 +127,17 @@ export class HeroEcosystem3D {
     this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.08;
+    this.renderer.toneMappingExposure = 1.16;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-    // Initial canvas opacity 0 for gentle progressive fade-in
+    // Studio Environment for soft PBR reflections on graphite metallic surfaces
+    this.pmremGenerator = new THREE.PMREMGenerator(this.renderer);
+    this.pmremGenerator.compileEquirectangularShader();
+    const roomEnv = new RoomEnvironment();
+    this.scene.environment = this.pmremGenerator.fromScene(roomEnv, 0.04).texture;
+    this.scene.environmentIntensity = 0.35;
+
+    // Progressive fade-in
     this.renderer.domElement.style.opacity = '0';
     this.renderer.domElement.style.transition = 'opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1)';
     this.renderer.domElement.style.display = 'block';
@@ -135,6 +147,8 @@ export class HeroEcosystem3D {
     // Root group for all interactive transforms
     this.rootGroup = new THREE.Group();
     this.scene.add(this.rootGroup);
+
+    this._updateCameraFraming(width, height);
   }
 
   _updateCameraFraming(width, height) {
@@ -142,48 +156,69 @@ export class HeroEcosystem3D {
     const aspect = width / Math.max(height, 1);
     this.camera.aspect = aspect;
 
-    // Model occupies approx 7.2 wide by 6.4 high.
-    // Dynamically calculate camera Z so model fits with comfortable padding across viewports.
-    let targetZ = 11.8;
-    if (aspect < 1.0) {
-      // Narrow / mobile portrait containers
-      targetZ = 12.2 / aspect;
-    } else if (aspect < 1.3) {
-      targetZ = 12.4;
-    } else {
-      targetZ = 11.6;
+    const isDesktop = window.innerWidth >= 900;
+
+    if (this.heroModelRoot) {
+      // Scale GLB so ecosystem dominates ~48-52% of hero visual width on desktop
+      const modelScale = isDesktop ? 1.08 : 0.82;
+      this.heroModelRoot.scale.setScalar(modelScale);
+
+      // Optically center core vertically at ~48-52% of content height
+      // and position platform comfortably above capability row (~74%)
+      const posY = isDesktop ? 0.22 : 0.05;
+      const posX = isDesktop ? 0.04 : 0.0;
+      this.heroModelRoot.position.set(posX, posY, 0);
     }
 
-    // Restrain bounds
-    targetZ = Math.min(Math.max(targetZ, 11.2), 16.5);
+    const fov = 40;
+    this.camera.fov = fov;
+    const tanHalf = Math.tan((fov * Math.PI) / 360);
+
+    // Frame required bounds so all 6 modules, K core, and platform fit with generous breathing room
+    const reqW = isDesktop ? 8.6 : 8.0;
+    const reqH = isDesktop ? 8.4 : 7.6;
+    const zH = reqH / (2 * tanHalf);
+    const zW = (reqW / Math.max(aspect, 0.4)) / (2 * tanHalf);
+    let targetZ = Math.max(zH, zW);
+
+    targetZ = Math.min(Math.max(targetZ, 9.5), 16.5);
     this.camera.position.set(0, 0, targetZ);
-    this.camera.lookAt(0, 0, 0);
+    this.camera.lookAt(0, isDesktop ? 0.18 : 0, 0);
     this.camera.updateProjectionMatrix();
   }
 
   _createStudioLighting() {
-    // 1. Warm Champagne Key Light (Front / Upper-Right, honoring Blender #FEEFB8 key)
-    const keyLight = new THREE.DirectionalLight(0xFEEFB8, 2.4);
-    keyLight.position.set(4.5, 4.2, 6.0);
+    // 1. Warm Champagne Key Light (Grazing top-right edge, soft fill honoring Blender #FEEFB8 key)
+    const keyLight = new THREE.DirectionalLight(0xFEEFB8, 1.25);
+    keyLight.position.set(5.2, 4.2, 1.5);
     this.scene.add(keyLight);
 
-    // 2. Soft Ivory Rim Light (Rear / Upper-Left to sculpt module bevels and core silhouette)
-    const rimLight = new THREE.DirectionalLight(0xFFF8E7, 2.2);
-    rimLight.position.set(-4.5, 3.8, -4.5);
+    // 2. Warm Champagne Rim Light (Rear-Left catching module bevels & core silhouette)
+    const rimLight = new THREE.DirectionalLight(0xFEEFB8, 2.2);
+    rimLight.position.set(-5.5, 4.2, -3.5);
     this.scene.add(rimLight);
 
-    // 3. Subtle Graphite Fill Light (Lower-Left to soften deep shadows without washing out dark tones)
-    const fillLight = new THREE.DirectionalLight(0x283034, 1.1);
-    fillLight.position.set(-3.0, -3.2, 3.5);
-    this.scene.add(fillLight);
+    // 3. Warm Champagne Edge / Grazing Light (Rear-Right edge separation)
+    const rimLightRight = new THREE.DirectionalLight(0xFEEFB8, 1.6);
+    rimLightRight.position.set(5.0, 1.8, -3.0);
+    this.scene.add(rimLightRight);
 
-    // 4. Overhead Accent Light (Directly above core for top-edge rim definition)
-    const overheadLight = new THREE.DirectionalLight(0xFFF8E7, 0.9);
-    overheadLight.position.set(0, 6.0, 1.5);
+    // 4. Overhead Bevel Definition Light (Catches top-edge rims of module cards)
+    const overheadLight = new THREE.DirectionalLight(0xFEEFB8, 1.2);
+    overheadLight.position.set(0, 6.2, 0.8);
     this.scene.add(overheadLight);
 
-    // 5. Dark Ambient Studio Base (Maintains rich near-black floor without total darkness)
-    const ambientLight = new THREE.AmbientLight(0x0E1214, 1.3);
+    // 5. Platform Grazing Uplight (Gently defines stepped metallic platform base rings)
+    const platformLight = new THREE.DirectionalLight(0xFEEFB8, 1.25);
+    platformLight.position.set(0, -3.8, 1.8);
+    this.scene.add(platformLight);
+
+    // 6. Studio Hemisphere Light (Warm graphite fill, prevents pitch-black void while keeping floor deep black)
+    const hemiLight = new THREE.HemisphereLight(0x221E1A, 0x050607, 1.35);
+    this.scene.add(hemiLight);
+
+    // 7. Dark Ambient Studio Base
+    const ambientLight = new THREE.AmbientLight(0x0A0D0E, 0.85);
     this.scene.add(ambientLight);
   }
 
@@ -218,6 +253,14 @@ export class HeroEcosystem3D {
     this.platformGroup = heroRoot.getObjectByName('PLATFORM');
     this.environmentGroup = heroRoot.getObjectByName('ENVIRONMENT');
 
+    // Step 6: Platform, Module_Business, and Connection_Business geometry and positions
+    // are now authoritatively crafted and verified directly within the Step 6 GLB asset.
+
+    // Hide GLB background polygons so the ecosystem floats cleanly on the studio background
+    if (this.environmentGroup) {
+      this.environmentGroup.visible = false;
+    }
+
     // Index the six technology modules for hover interactivity
     const moduleNames = [
       'Module_Web',
@@ -241,15 +284,86 @@ export class HeroEcosystem3D {
       }
     });
 
-    // Discover data pulses along conduits
+    // PBR Material enhancement & calibration:
+    // Ensures metallic graphite reflects studio environment, gold bevels catch champagne sheen,
+    // and 3D typography is crisp and legible
     heroRoot.traverse((child) => {
-      if (child.isMesh) {
-        // Ensure proper tone mapping on all PBR materials
-        if (Array.isArray(child.material)) {
-          child.material.forEach((m) => { m.toneMapped = true; });
-        } else if (child.material) {
-          child.material.toneMapped = true;
-        }
+      // Hide any mountain / atmosphere background meshes from GLB
+      if (child.name === 'Background_Mountains' || child.name === 'Atmosphere' || child.name === 'ENVIRONMENT') {
+        child.visible = false;
+        return;
+      }
+
+      // Deep dark recessed cavity behind the illuminated K
+      if (child.name === 'CoreInnerShell' && child.isMesh) {
+        child.material = child.material.clone();
+        child.material.color = new THREE.Color(0x010202);
+        child.material.roughness = 0.98;
+        child.material.metalness = 0.0;
+        child.material.envMapIntensity = 0.0;
+        return;
+      }
+
+      // Strengthen visual weight and stroke readability of the central brand K
+      if (child.name === 'CoreK' && child.isMesh) {
+        child.scale.set(1.30, 1.30, 1.30);
+        child.material = child.material.clone();
+        child.material.color = new THREE.Color(0xFFF0B8);
+        child.material.emissive = new THREE.Color(0xFEEFB8);
+        child.material.emissiveIntensity = 2.6;
+        child.material.roughness = 0.18;
+        child.material.metalness = 0.45;
+        child.material.envMapIntensity = 0.80;
+        return;
+      }
+
+      if (child.isMesh && child.material) {
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        materials.forEach((mat) => {
+          mat.toneMapped = true;
+
+          const matName = mat.name || '';
+          if (matName.includes('CoreBody')) {
+            // Satin-finished graphite with diffused, even sheen (no harsh specular spots)
+            mat.roughness = 0.58;
+            mat.metalness = 0.65;
+            mat.envMapIntensity = 0.45;
+          } else if (matName.includes('CasingGraphite')) {
+            mat.roughness = 0.42;
+            mat.metalness = 0.75;
+            mat.envMapIntensity = 0.60;
+          } else if (matName.includes('DarkMetal')) {
+            mat.roughness = 0.52;
+            mat.metalness = 0.72;
+            mat.envMapIntensity = 0.45;
+          } else if (matName.includes('SecGraphite')) {
+            mat.roughness = 0.45;
+            mat.metalness = 0.72;
+            mat.envMapIntensity = 0.55;
+          } else if (matName.includes('GoldAccent')) {
+            // Warm champagne bevel rims, module frames, connection ports, K bezel
+            mat.roughness = 0.24;
+            mat.metalness = 0.88;
+            mat.emissive = new THREE.Color(0xFEEFB8);
+            mat.emissiveIntensity = 0.85;
+            mat.envMapIntensity = 1.1;
+          } else if (matName.includes('GoldEmissive')) {
+            // Illuminated equator grooves, pulse nodes
+            mat.emissive = new THREE.Color(0xFEEFB8);
+            mat.emissiveIntensity = 2.4;
+          } else if (matName.includes('GoldGlow')) {
+            mat.emissive = new THREE.Color(0xFEEFB8);
+            mat.emissiveIntensity = 1.8;
+          } else if (matName.includes('WarmText')) {
+            // Crisp, legible module typography
+            mat.emissive = new THREE.Color(0xFFF8E7);
+            mat.emissiveIntensity = 2.0;
+          } else if (matName.includes('PlatformGlow')) {
+            // Concentric platform rings
+            mat.emissive = new THREE.Color(0xFEEFB8);
+            mat.emissiveIntensity = 1.8;
+          }
+        });
 
         if (child.name.includes('_Pulse')) {
           this.pulseObjects.push(child);
@@ -257,14 +371,17 @@ export class HeroEcosystem3D {
       }
     });
 
-    // Compare with website background:
-    // When the 3D scene loads with its own environment, reduce HTML ambient landscape
-    // to avoid duplicate mountain silhouettes
+    // Apply framing & scaling
+    const width = this.container.clientWidth || 720;
+    const height = this.container.clientHeight || 620;
+    this._updateCameraFraming(width, height);
+
+    // Reduce duplicate mountain silhouette on website background
     if (this.heroSectionEl) {
       const ambientLandscape = this.heroSectionEl.querySelector('.hero-ambient-landscape');
       if (ambientLandscape) {
         ambientLandscape.style.transition = 'opacity 0.8s ease';
-        ambientLandscape.style.opacity = '0.04'; // Subtle depth without duplicate silhouette clash
+        ambientLandscape.style.opacity = '0.04';
       }
     }
 
@@ -305,6 +422,29 @@ export class HeroEcosystem3D {
     if (motionQuery.addEventListener) {
       motionQuery.addEventListener('change', this._onMotionPreferenceChange);
     }
+
+    // IntersectionObserver to pause rendering when hero is off-screen
+    const targetObs = this.heroSectionEl || this.container;
+    if ('IntersectionObserver' in window && targetObs) {
+      this.observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          this._onVisibilityChange(entry.isIntersecting);
+        });
+      }, { threshold: 0.05 });
+      this.observer.observe(targetObs);
+    }
+  }
+
+  _onVisibilityChange(isVisible) {
+    if (this.isVisible === isVisible) return;
+    this.isVisible = isVisible;
+    if (this.isVisible && !this.animId && this.isLoaded && !this.isDestroyed) {
+      this.clock.start();
+      this._animate();
+    } else if (!this.isVisible && this.animId) {
+      cancelAnimationFrame(this.animId);
+      this.animId = null;
+    }
   }
 
   _onMotionPreferenceChange(e) {
@@ -316,8 +456,7 @@ export class HeroEcosystem3D {
   }
 
   _onMouseMove(event) {
-    // Subtle mouse parallax:
-    // Maximum ±2 degrees rotation X (~0.035 rad), ±3 degrees rotation Y (~0.052 rad)
+    // Subtle mouse parallax (max ±2° rotation X, ±3° rotation Y)
     const normX = (event.clientX / window.innerWidth) * 2 - 1;
     const normY = -(event.clientY / window.innerHeight) * 2 + 1;
     this.mouse.targetX = normX * 0.052; // ±3 deg
@@ -325,19 +464,18 @@ export class HeroEcosystem3D {
   }
 
   _onPointerMove(event) {
-    // Don't raycast on touch devices to avoid sticky hover states
     if (event.pointerType === 'touch') return;
     if (!this.container || !this.isLoaded) return;
 
     const rect = this.container.getBoundingClientRect();
     this.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     this.pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-    this._checkRaycast();
+    this.pointerNeedsCheck = true;
   }
 
   _onPointerLeave() {
     this.pointer.set(-999, -999);
+    this.pointerNeedsCheck = false;
     this._clearHover();
   }
 
@@ -349,7 +487,6 @@ export class HeroEcosystem3D {
     const intersects = this.raycaster.intersectObjects(targets, true);
 
     if (intersects.length > 0) {
-      // Find the parent module
       let hit = intersects[0].object;
       let matchedName = null;
 
@@ -397,7 +534,6 @@ export class HeroEcosystem3D {
   }
 
   _onScroll() {
-    // Subtle scroll-linked Hero depth behavior
     this.scroll.targetY = window.scrollY * 0.00045;
   }
 
@@ -411,40 +547,32 @@ export class HeroEcosystem3D {
   }
 
   _animate() {
-    if (this.isDestroyed) return;
+    if (this.isDestroyed || !this.isVisible) return;
     this.animId = requestAnimationFrame(this._animate);
 
     const delta = this.clock.getDelta();
     const time = this.clock.getElapsedTime();
 
+    // Frame-synced raycasting check (avoids redundant work on high-polling mice)
+    if (this.pointerNeedsCheck) {
+      this._checkRaycast();
+      this.pointerNeedsCheck = false;
+    }
+
     if (this.isLoaded && this.rootGroup) {
       if (!this.prefersReducedMotion) {
-        // Smooth parallax interpolation (lerp)
+        // Smooth parallax interpolation
         this.mouse.x += (this.mouse.targetX - this.mouse.x) * 0.055;
         this.mouse.y += (this.mouse.targetY - this.mouse.y) * 0.055;
         this.scroll.y += (this.scroll.targetY - this.scroll.y) * 0.055;
 
         // Subtle restrained idle breathing sway (0.06 rad/sec, K remains legible and facing front)
         const idleSwayY = Math.sin(time * 0.38) * 0.022; // ±1.2 degrees
-        const idleFloatY = Math.sin(time * 0.55) * 0.04;
+        const idleFloatY = Math.sin(time * 0.55) * 0.035;
 
-        this.rootGroup.rotation.y = this.mouse.x + idleSwayY + (this.scroll.y * 0.6);
+        this.rootGroup.rotation.y = this.mouse.x + idleSwayY + (this.scroll.y * 0.5);
         this.rootGroup.rotation.x = -this.mouse.y;
-        this.rootGroup.position.y = idleFloatY + (this.scroll.y * 0.5);
-
-        // Smooth module hover scaling
-        this.moduleObjects.forEach((modObj, name) => {
-          const state = this.moduleHoverStates.get(name);
-          const baseScale = this.moduleBaseScales.get(name);
-          if (state && baseScale) {
-            state.currentScale += (state.targetScale - state.currentScale) * 0.12;
-            modObj.scale.set(
-              baseScale.x * state.currentScale,
-              baseScale.y * state.currentScale,
-              baseScale.z * state.currentScale
-            );
-          }
-        });
+        this.rootGroup.position.y = idleFloatY + (this.scroll.y * 0.4);
 
         // Subtle breathing pulse glow on connection beads
         if (this.pulseObjects.length > 0) {
@@ -456,10 +584,23 @@ export class HeroEcosystem3D {
           });
         }
       } else {
-        // Reduced motion: purely static
         this.rootGroup.rotation.set(0, 0, 0);
         this.rootGroup.position.set(0, 0, 0);
       }
+
+      // Smooth module hover scaling (active in both standard and reduced motion for crisp UI responsiveness)
+      this.moduleObjects.forEach((modObj, name) => {
+        const state = this.moduleHoverStates.get(name);
+        const baseScale = this.moduleBaseScales.get(name);
+        if (state && baseScale) {
+          state.currentScale += (state.targetScale - state.currentScale) * 0.12;
+          modObj.scale.set(
+            baseScale.x * state.currentScale,
+            baseScale.y * state.currentScale,
+            baseScale.z * state.currentScale
+          );
+        }
+      });
     }
 
     if (this.renderer && this.scene && this.camera) {
@@ -470,6 +611,11 @@ export class HeroEcosystem3D {
   destroy() {
     this.isDestroyed = true;
     if (this.animId) cancelAnimationFrame(this.animId);
+
+    if (this.observer) {
+      this.observer.disconnect();
+      this.observer = null;
+    }
 
     window.removeEventListener('mousemove', this._onMouseMove);
     window.removeEventListener('scroll', this._onScroll);
@@ -485,7 +631,10 @@ export class HeroEcosystem3D {
       motionQuery.removeEventListener('change', this._onMotionPreferenceChange);
     }
 
-    // Traverse and dispose Three.js resources
+    if (this.pmremGenerator) {
+      this.pmremGenerator.dispose();
+    }
+
     if (this.scene) {
       this.scene.traverse((obj) => {
         if (obj.geometry) obj.geometry.dispose();

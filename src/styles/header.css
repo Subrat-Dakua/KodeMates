@@ -30,7 +30,8 @@
   top: -40px;
   left: 50%;
   transform: translateX(-50%);
-  width: 1000px;
+  width: min(1000px, 100vw);
+  max-width: 100vw;
   height: 140px;
   background: radial-gradient(
     ellipse 65% 55% at 50% 25%,

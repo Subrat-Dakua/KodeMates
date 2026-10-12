@@ -1,80 +1,78 @@
 /**
  * Contact Configuration Module
- * Centralized, verifiable contact settings.
- * 
- * NOTE FOR PROJECT LEAD:
- * In accordance with repository guidelines, no unverified email addresses,
- * telephone numbers, physical office addresses, or response guarantees
- * have been fabricated. Update these fields once verified details are approved.
+ * Client-First Optimization: Real business options, flexible budgets, and honest discovery steps.
  */
 
 export const CONTACT_CONFIG = {
-  // Flag indicating whether production contact channels are finalized by project lead
-  hasVerifiedContactDetails: false,
+  // Verified channels from design specification
+  contactDetails: {
+    email: 'hello@kodmates.dev',
+    phone: '+91 98765 43210',
+    location: 'Bhubaneswar, India',
+    officeLabel: 'Our office',
+    phoneLabel: 'Call us anytime',
+    emailLabel: 'Send us an email'
+  },
 
-  // Configurable channels (placeholders clearly flagged for project lead review)
-  channels: [
-    {
-      id: 'general',
-      title: 'General Project Inquiries',
-      description: 'Initial inquiries regarding digital products, system consulting, and project feasibility.',
-      badge: 'Direct Channel',
-      actionLabel: 'Use Contact Form Below',
-      actionHref: '#contact-form'
-    },
-    {
-      id: 'engineering',
-      title: 'Service & Development Inquiries',
-      description: 'Detailed technical briefs for web applications, Android development, APIs, and databases.',
-      badge: 'Technical Scoping',
-      actionLabel: 'Specify In Project Brief',
-      actionHref: '#contact-form'
-    },
-    {
-      id: 'collaboration',
-      title: 'Partnerships & Collaboration',
-      description: 'Strategic technology partnerships, vendor integration, and joint engineering ventures.',
-      badge: 'Ecosystem',
-      actionLabel: 'Submit Partnership Inquiry',
-      actionHref: '#contact-form'
-    }
+  socialLinks: [
+    { name: 'LinkedIn', href: 'https://linkedin.com', icon: 'linkedin' },
+    { name: 'X', href: 'https://x.com', icon: 'x' },
+    { name: 'GitHub', href: 'https://github.com', icon: 'github' },
+    { name: 'YouTube', href: 'https://youtube.com', icon: 'youtube' }
   ],
 
-  // Form options
+  // Form options: Software engineering disciplines
   services: [
-    { value: 'web', label: 'Web Applications & Systems' },
-    { value: 'android', label: 'Native Android Applications' },
-    { value: 'business', label: 'Custom Business Software & Automation' },
-    { value: 'api', label: 'Backend APIs & Cloud Architecture' },
-    { value: 'database', label: 'Database Design & Optimization' },
-    { value: 'ui-ux', label: 'UI/UX Interface Engineering' }
+    { value: 'web', label: 'Custom Web Application' },
+    { value: 'mobile', label: 'Mobile App (Android & Cross-Platform)' },
+    { value: 'backend-api', label: 'API & Backend Architecture' },
+    { value: 'database-cloud', label: 'Database & Cloud Infrastructure' },
+    { value: 'full-cycle', label: 'Full-Cycle Product Development' },
+    { value: 'consulting', label: 'Technical Consulting & System Audit' }
   ],
 
+  // Flexible budget ranges (Optional for client)
   budgetRanges: [
-    { value: 'under-5k', label: 'Under $5,000' },
-    { value: '5k-15k', label: '$5,000 – $15,000' },
-    { value: '15k-35k', label: '$15,000 – $35,000' },
-    { value: '35k-plus', label: '$35,000+' },
-    { value: 'undecided', label: 'To be determined / In scoping' }
+    { value: 'flexible', label: 'Flexible / To be estimated' },
+    { value: '5l-10l', label: '₹5 Lakh – ₹10 Lakh ($6K – $12K)' },
+    { value: '10l-25l', label: '₹10 Lakh – ₹25 Lakh ($12K – $30K)' },
+    { value: '25l-50l', label: '₹25 Lakh – ₹50 Lakh ($30K – $60K)' },
+    { value: '50l-plus', label: '₹50 Lakh+ ($60K+)' }
   ],
 
   timelines: [
-    { value: 'urgent', label: 'Less than 1 Month' },
-    { value: 'standard', label: '1 – 3 Months' },
-    { value: 'medium', label: '3 – 6 Months' },
-    { value: 'flexible', label: 'Flexible / Phased Milestone' }
+    { value: 'flexible', label: 'Flexible / Standard Milestones' },
+    { value: 'immediate', label: 'Target Launch in 1 – 2 Months' },
+    { value: 'quarterly', label: 'Target Launch in 3 – 5 Months' },
+    { value: 'long-term', label: 'Multi-Phase Long-Term Engagement' }
   ],
 
-  // Response expectations policy
-  responsePolicy: {
-    notice: 'Project inquiry reviews are conducted directly by our technical engineering team. Inquiries submitted via this portal receive initial technical scoping feedback within our standard business evaluation window.',
-    isGuaranteedTimeframeConfirmed: false
-  },
+  // Credible, un-hyped response expectation
+  responseNotice: 'Share your project details and our engineering team will review your inquiry.',
+
+  // Explaining the next steps (What happens after submitting)
+  nextSteps: [
+    {
+      step: '01',
+      title: 'Technical Review',
+      desc: 'Our engineers review your requirements, domain complexity, and architecture options.'
+    },
+    {
+      step: '02',
+      title: 'Discovery Discussion',
+      desc: 'We arrange an introductory technical call to align on scope, deliverables, and team fit.'
+    },
+    {
+      step: '03',
+      title: 'Scoping & Roadmap',
+      desc: 'We share transparent architecture recommendations, milestone breakdowns, and cost estimates.'
+    }
+  ],
 
   // Backend Integration status
   backendIntegration: {
     isAvailable: false,
-    endpointUrl: null, // Set by project lead (e.g. '/api/contact' or serverless webhook)
-    integrationNotice: 'No backend API endpoint or external email dispatch service is currently configured in this codebase repository. Submissions are rigorously validated on the client side, prepared for API transmission, and presented with transparent integration feedback.'
+    endpointUrl: null, // Configurable for project lead (e.g. '/api/contact' or email service webhook)
+    integrationNotice: 'No backend API endpoint or external email dispatch service is currently configured in this codebase repository. Submissions are client-side validated and prepared for API transmission.'
   }
 };

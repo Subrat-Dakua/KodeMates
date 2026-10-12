@@ -25,10 +25,10 @@ import { resetBlogSEO } from './components/blog/BlogSEO.js';
 const header = initHeader({ activePage: 'Home' });
 
 // Step 02: Initialize Kodmates Homepage Hero & 3D Ecosystem
-const hero = initHero();
+initHero();
 
 // Shared Footer
-const footer = initFooter();
+initFooter();
 
 // Route state management
 let activePageInstance = null;
@@ -52,9 +52,6 @@ export function parseRoute() {
   }
   if (hash === '#contact' || hash === '#/contact') {
     return { type: 'contact' };
-  }
-  if (hash === '#home' || hash === '#/' || hash === '') {
-    // Check if path is something specific
   }
 
   // Path route checks
@@ -132,7 +129,7 @@ function setupNavigation() {
     if (!href || target === '_blank') return;
 
     // Check if link matches internal route targets
-    const isBlogLink = href === '/blog' || href === '#blog' || href === '#/blog' || href.startsWith('/blog/') || href.startsWith('#/blog/') || targetId === 'blog';
+    const isBlogLink = href === '/blog' || href === '#blog' || href === '#/blog' || href.startsWith('/blog/') || href.startsWith('#/blog/') || href.startsWith('/blog?') || targetId === 'blog';
     const isContactLink = href === '/contact' || href === '#contact' || href === '#/contact' || targetId === 'contact';
     const isHomeLink = href === '/' || href === '#home' || href === '#/' || targetId === 'home';
 
@@ -148,6 +145,8 @@ function setupNavigation() {
         } else if (href.startsWith('/blog/') || href.startsWith('#/blog/')) {
           const slug = href.replace(/^#?\/?blog\//, '').split('/')[0].split('?')[0];
           destination = `/blog/${slug}`;
+        } else if (href.startsWith('/blog?')) {
+          destination = href;
         } else {
           destination = '/blog';
         }

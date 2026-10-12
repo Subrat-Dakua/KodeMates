@@ -84,7 +84,7 @@ export const websiteVsWebAppArticle = {
         <p>Host marketing documentation and blog insights on a high-speed, edge-cached static or SSR system (such as KodMates web properties), while mounting authenticated operations at <code>app.yourdomain.com</code>.</p>
         <div class="article-callout">
           <div class="article-callout__title">Strategic Advice</div>
-          <p>Never encumber your marketing pages with heavy stateful application dependencies, and never attempt to build enterprise operational workflows inside a rigid marketing CMS.</p>
+          <p>Never encumber your marketing pages with heavy stateful application dependencies, and never attempt to build enterprise operational workflows inside a rigid marketing CMS. Founders evaluating this decision can <a href="/contact">reach out to KodMates engineers</a> for an architectural scoping discussion.</p>
         </div>
       `
     }

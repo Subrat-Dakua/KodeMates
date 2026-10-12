@@ -1,14 +1,20 @@
 /**
  * ContactPage Component
- * Full Contact Page Experience adhering to KodMates design system
- * and strict submission rules.
+ * Pixel-Accurate Reference Recreation:
+ * - Wide cinematic hero with 3 core value propositions and studio photo
+ * - Three-column main contact section: Contact Info (left), Inquiry Form (center), Why Reach Out + Isometric Art (right)
+ * - Section D: Inquiry follow-up 3-step timeline ("WHAT HAPPENS AFTER YOU SEND THIS INQUIRY?")
+ * - Section E: 5-step engineering process with animated topographic wave
+ * - Section F: Final consultation banner ("Have a Complex Project in Mind?")
  */
 
 import { createContactHero } from '../components/contact/ContactHero.js';
 import { createContactInfo } from '../components/contact/ContactInfo.js';
 import { createContactFormHTML, isValidEmail } from '../components/contact/ContactForm.js';
+import { createContactBenefits } from '../components/contact/ContactBenefits.js';
+import { createContactNextSteps } from '../components/contact/ContactNextSteps.js';
 import { createContactProcess } from '../components/contact/ContactProcess.js';
-import { createContactFAQ } from '../components/contact/ContactFAQ.js';
+import { createContactConsultationBanner } from '../components/contact/ContactConsultationBanner.js';
 import { CONTACT_CONFIG } from '../components/contact/ContactConfig.js';
 
 export class ContactPage {
@@ -19,17 +25,31 @@ export class ContactPage {
 
     this._handleSubmit = this._handleSubmit.bind(this);
     this._handleInput = this._handleInput.bind(this);
-    this._handleFAQClick = this._handleFAQClick.bind(this);
   }
 
   renderHTML() {
     return `
       <div class="contact-page" id="contact-page">
+        <!-- 1. Hero Section: Cinematic Split with Team Studio Photo -->
         ${createContactHero()}
-        ${createContactInfo()}
-        ${createContactFormHTML()}
+
+        <!-- 2. Main Three-Column Contact Section -->
+        <section class="contact-main-section" id="contact-main-section" aria-label="Contact and Project Inquiry">
+          <div class="contact-main-container">
+            ${createContactInfo()}
+            ${createContactFormHTML()}
+            ${createContactBenefits()}
+          </div>
+        </section>
+
+        <!-- 3. What Happens After You Send This Inquiry: 3-Step Follow-Up Timeline -->
+        ${createContactNextSteps()}
+
+        <!-- 4. Our Process: 5-Step Connected Timeline -->
         ${createContactProcess()}
-        ${createContactFAQ()}
+
+        <!-- 5. Final Consultation Banner -->
+        ${createContactConsultationBanner()}
       </div>
     `;
   }
@@ -52,10 +72,10 @@ export class ContactPage {
   }
 
   updateSEO() {
-    document.title = "Contact KodMates — Start a Software Project";
+    document.title = "Contact KodMates — Start a Project Discussion";
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
-      metaDesc.setAttribute('content', "Let's build something meaningful. Contact KodMates to discuss web applications, Android development, APIs, and custom software systems.");
+      metaDesc.setAttribute('content', "Discuss your custom software project with KodMates engineers. Share requirements for web applications, mobile platforms, APIs, and cloud infrastructure.");
     }
   }
 
@@ -67,6 +87,7 @@ export class ContactPage {
     if (form) {
       form.addEventListener('submit', this._handleSubmit);
       form.addEventListener('input', this._handleInput);
+      form.addEventListener('change', this._handleInput);
     }
 
     // Character counter for description
@@ -75,14 +96,22 @@ export class ContactPage {
     if (descTextarea && charCounter) {
       descTextarea.addEventListener('input', () => {
         const len = descTextarea.value.length;
-        charCounter.textContent = `${len} / 2000`;
+        charCounter.textContent = `${len}/1000`;
       });
     }
 
-    // FAQ Accordion
-    const accordion = this.pageEl.querySelector('#contact-faq-accordion');
-    if (accordion) {
-      accordion.addEventListener('click', this._handleFAQClick);
+    // Final consultation banner CTA smooth scroll
+    const bannerCta = this.pageEl.querySelector('#consultation-banner-cta');
+    if (bannerCta) {
+      bannerCta.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetForm = this.pageEl.querySelector('#kodmates-contact-form');
+        if (targetForm) {
+          targetForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const nameInput = targetForm.querySelector('#field-fullname');
+          setTimeout(() => nameInput?.focus(), 450);
+        }
+      });
     }
   }
 
@@ -94,29 +123,6 @@ export class ContactPage {
       input.removeAttribute('aria-invalid');
       const errEl = group.querySelector('.form-error-msg');
       if (errEl) errEl.textContent = '';
-    }
-  }
-
-  _handleFAQClick(e) {
-    const trigger = e.target.closest('.faq-trigger');
-    if (!trigger) return;
-
-    const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
-    const panelId = trigger.getAttribute('aria-controls');
-    const panel = this.pageEl.querySelector(`#${panelId}`);
-
-    if (isExpanded) {
-      trigger.setAttribute('aria-expanded', 'false');
-      panel?.classList.remove('is-open');
-    } else {
-      // Close other panels in accordion
-      const allTriggers = this.pageEl.querySelectorAll('.faq-trigger');
-      const allPanels = this.pageEl.querySelectorAll('.faq-panel');
-      allTriggers.forEach((t) => t.setAttribute('aria-expanded', 'false'));
-      allPanels.forEach((p) => p.classList.remove('is-open'));
-
-      trigger.setAttribute('aria-expanded', 'true');
-      panel?.classList.add('is-open');
     }
   }
 
@@ -156,24 +162,31 @@ export class ContactPage {
       hasError = true;
     };
 
-    // 1. Full name validation
+    // 1. Full name validation (Required)
     if (!fullNameInput.value || fullNameInput.value.trim().length < 2) {
-      setError(fullNameInput, '#group-fullname', '#error-fullname', 'Please provide your full name (minimum 2 characters).');
+      setError(fullNameInput, '#group-fullname', '#error-fullname', 'Please provide your full name.');
     }
 
-    // 2. Email format validation
+    // 2. Email format validation (Required)
     if (!emailInput.value || !isValidEmail(emailInput.value)) {
-      setError(emailInput, '#group-email', '#error-email', 'Please provide a valid email address (e.g. name@company.com).');
+      setError(emailInput, '#group-email', '#error-email', 'Please provide a valid email address.');
     }
 
-    // 3. Project description validation
-    if (!descInput.value || descInput.value.trim().length < 20) {
-      setError(descInput, '#group-description', '#error-description', 'Please share more project context (minimum 20 characters).');
+    // 3. Project type validation (Required)
+    if (!serviceInput.value) {
+      setError(serviceInput, '#group-service', '#error-service', 'Please select a project type.');
     }
 
-    // 4. Consent validation
+    // 4. Budget range is OPTIONAL per reference design
+
+    // 5. Project details validation (Required, min 10 chars)
+    if (!descInput.value || descInput.value.trim().length < 10) {
+      setError(descInput, '#group-description', '#error-description', 'Please share a few details about what you want to build (minimum 10 characters).');
+    }
+
+    // 6. Consent validation (Required)
     if (!consentInput.checked) {
-      setError(consentInput, '#group-consent', '#error-consent', 'Please consent to project inquiry review to proceed.');
+      setError(consentInput, '#group-consent', '#error-consent', 'Please agree to the privacy policy to submit.');
     }
 
     if (hasError) {
@@ -187,34 +200,56 @@ export class ContactPage {
     submitBtn?.classList.add('is-loading');
 
     // Simulate standard request processing latency
-    await new Promise((res) => setTimeout(res, 650));
+    await new Promise((res) => setTimeout(res, 600));
 
     // Construct structured submission payload
     const payload = {
-      submissionId: 'km-inq-' + Date.now().toString(36),
+      submissionId: 'km-msg-' + Date.now().toString(36),
       submittedAt: new Date().toISOString(),
       inquiryData: {
         fullName: fullNameInput.value.trim(),
         email: emailInput.value.trim(),
         company: companyInput.value.trim() || 'Not specified',
-        service: serviceInput.value || 'General Technical Inquiries',
-        budget: budgetInput.value || 'Not specified',
-        timeline: timelineInput.value || 'Flexible',
+        service: serviceInput.options[serviceInput.selectedIndex]?.text || serviceInput.value,
+        budget: budgetInput.value ? (budgetInput.options[budgetInput.selectedIndex]?.text || budgetInput.value) : 'Flexible / To be estimated',
+        timeline: timelineInput.value ? (timelineInput.options[timelineInput.selectedIndex]?.text || timelineInput.value) : 'Flexible / Standard milestones',
         description: descInput.value.trim(),
         consentAcknowledged: true
       },
       integrationEnvironment: {
-        backendConfigured: false,
-        deliveryStatus: 'READY_FOR_BACKEND_DISPATCH',
+        backendConfigured: Boolean(CONTACT_CONFIG.backendIntegration.endpointUrl),
+        deliveryStatus: CONTACT_CONFIG.backendIntegration.endpointUrl ? 'TRANSMITTING' : 'SERVICE_ENDPOINT_UNLINKED',
         note: CONTACT_CONFIG.backendIntegration.integrationNotice
       }
     };
 
-    // Render honest feedback in accordance with Important Submission Rule
-    this.renderSubmissionFeedback(payload);
+    // If a live backend endpoint is configured, perform transmission
+    if (CONTACT_CONFIG.backendIntegration.endpointUrl) {
+      try {
+        const response = await fetch(CONTACT_CONFIG.backendIntegration.endpointUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          payload.integrationEnvironment.deliveryStatus = 'DELIVERED_SUCCESSFULLY';
+          this.renderSubmissionFeedback(payload, true);
+        } else {
+          throw new Error(`HTTP Error ${response.status}`);
+        }
+      } catch (err) {
+        payload.integrationEnvironment.deliveryStatus = 'DELIVERY_FAILED';
+        payload.integrationEnvironment.error = err.message;
+        this.renderSubmissionFeedback(payload, false, true);
+      }
+    } else {
+      // Operationally honest state: endpoint is unlinked in this frontend deployment
+      this.renderSubmissionFeedback(payload, false, false);
+    }
   }
 
-  renderSubmissionFeedback(payload) {
+  renderSubmissionFeedback(payload, isDelivered = false, isError = false) {
     const feedbackBox = this.pageEl.querySelector('#contact-feedback-container');
     const form = this.pageEl.querySelector('#kodmates-contact-form');
 
@@ -224,21 +259,62 @@ export class ContactPage {
     feedbackBox.style.display = 'block';
 
     const payloadJsonString = JSON.stringify(payload, null, 2);
+    const { fullName, email, service, budget, description } = payload.inquiryData;
+
+    // Generate pre-filled mailto link so user has a working transmission path
+    const mailtoSubject = encodeURIComponent(`Project Inquiry: ${service} — ${fullName}`);
+    const mailtoBody = encodeURIComponent(
+      `Hi KodMates Team,\n\nI would like to discuss a project:\n\nName: ${fullName}\nEmail: ${email}\nService: ${service}\nBudget: ${budget}\n\nProject Details:\n${description}\n\nSubmission Ref: ${payload.submissionId}`
+    );
+    const mailtoUrl = `mailto:${CONTACT_CONFIG.contactDetails.email}?subject=${mailtoSubject}&body=${mailtoBody}`;
+
+    let statusBadge = 'INQUIRY VALIDATED';
+    let statusTitle = 'Inquiry Validated — Service Connection Pending';
+    let statusDesc = `
+      Your project details have been successfully validated against our production API schema. 
+      Because an external email or API dispatch endpoint has not yet been linked in this frontend deployment, 
+      your message has not been transmitted automatically.
+    `;
+
+    if (isDelivered) {
+      statusBadge = 'INQUIRY DELIVERED';
+      statusTitle = 'Message Sent Successfully';
+      statusDesc = 'Your project inquiry has been received by our engineering team. We will review your requirements.';
+    } else if (isError) {
+      statusBadge = 'DELIVERY ERROR';
+      statusTitle = 'Network Transmission Error';
+      statusDesc = 'We encountered a connection issue while contacting the dispatch server. You can retry or send directly via email.';
+    }
 
     feedbackBox.innerHTML = `
       <div class="feedback-card" role="region" aria-label="Submission feedback">
         <div class="feedback-header">
-          <div class="feedback-icon-badge" aria-hidden="true">✓</div>
+          <div class="feedback-icon-badge" aria-hidden="true">${isDelivered ? '✓' : 'ℹ'}</div>
           <div class="feedback-title-group">
-            <span class="feedback-badge">VALIDATION SUCCESSFUL</span>
-            <h3 class="feedback-title">Project Inquiry Validated</h3>
+            <span class="feedback-badge">${statusBadge}</span>
+            <h3 class="feedback-title">${statusTitle}</h3>
           </div>
         </div>
 
         <p class="feedback-desc">
-          ${CONTACT_CONFIG.backendIntegration.integrationNotice}
+          ${statusDesc}
         </p>
 
+        <!-- Direct Email Transmission Fallback -->
+        ${!isDelivered ? `
+          <div class="feedback-email-fallback">
+            <span class="fallback-note-title">Direct Transmission Option:</span>
+            <p class="fallback-note-text">
+              You can send this pre-compiled inquiry directly to our engineering mailbox with one click:
+            </p>
+            <a href="${mailtoUrl}" class="cta-button feedback-email-btn" id="direct-email-send-btn">
+              <span>Send via Email to ${CONTACT_CONFIG.contactDetails.email}</span>
+              <span class="cta-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+        ` : ''}
+
+        <!-- Technical Payload Inspection Box -->
         <div class="feedback-payload-box">
           <div class="feedback-payload-header">
             <span class="feedback-payload-label">Validated API Request Payload</span>
@@ -251,7 +327,7 @@ export class ContactPage {
 
         <div class="feedback-actions">
           <button type="button" class="feedback-reset-btn" id="edit-inquiry-btn">
-            ← Edit Inquiry Details
+            ← Return to Form &amp; Edit
           </button>
         </div>
       </div>

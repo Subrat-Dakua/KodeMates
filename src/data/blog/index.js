@@ -11,18 +11,15 @@ import { websiteVsWebAppArticle } from './articles/website-vs-web-app.js';
 import { androidDevelopmentGuideArticle } from './articles/android-development-guide.js';
 
 /**
- * Standardized KodMates Blog Categories (Step 07 requirement)
+ * Standardized KodMates Blog Categories matching active engineering publications
  */
 export const BLOG_CATEGORIES = [
   'All',
   'Web Development',
-  'Android Development',
-  'Software Engineering',
   'APIs & Backend',
-  'Cloud & Infrastructure',
   'Databases',
-  'Business Automation',
-  'UI/UX Design'
+  'Software Engineering',
+  'Android Development'
 ];
 
 /**
@@ -63,6 +60,19 @@ export function getFeaturedArticle() {
 }
 
 /**
+ * Computes article counts per category
+ */
+export function getCategoryCounts() {
+  const counts = { All: BLOG_ARTICLES.length };
+  BLOG_CATEGORIES.forEach((cat) => {
+    if (cat !== 'All') {
+      counts[cat] = BLOG_ARTICLES.filter((a) => (a.category || '').toLowerCase() === cat.toLowerCase()).length;
+    }
+  });
+  return counts;
+}
+
+/**
  * Recommends related articles based on category match, excluding current article
  * @param {string} currentSlug
  * @param {string} category
@@ -82,19 +92,6 @@ export function getRelatedArticles(currentSlug, category, limit = 2) {
 }
 
 /**
- * Dynamically calculates reading time estimate based on word count (~200 words per minute)
- * @param {string} htmlContent
- * @returns {string}
- */
-export function calculateReadingTime(htmlContent) {
-  if (!htmlContent) return '5 min read';
-  const cleanText = htmlContent.replace(/<[^>]*>/g, ' ');
-  const words = cleanText.trim().split(/\s+/).length;
-  const minutes = Math.max(1, Math.ceil(words / 200));
-  return `${minutes} min read`;
-}
-
-/**
  * Filters articles by category and search keyword
  * @param {Array<object>} articles
  * @param {object} options
@@ -111,7 +108,7 @@ export function filterArticles(articles = BLOG_ARTICLES, { category = 'All', sea
     results = results.filter((art) => (art.category || '').toLowerCase() === targetCat);
   }
 
-  // Search keyword filter (title, summary, tags, author name)
+  // Search keyword filter (title, summary, tags, author name, sections)
   if (search && search.trim().length > 0) {
     const term = search.trim().toLowerCase();
     results = results.filter((art) => {

@@ -101,6 +101,10 @@ export const restApisGuideArticle = {
         <pre class="code-block" data-language="http"><code>Deprecation: @1767225600
 Sunset: Wed, 31 Dec 2026 23:59:59 GMT
 Link: &lt;https://docs.kodmates.com/api/v2/migration&gt;; rel="successor-version"</code></pre>
+        <div class="article-callout">
+          <div class="article-callout__title">API & Backend Architecture</div>
+          <p>Designing high-scale RESTful APIs or transitioning monolithic endpoints to microservices? <a href="/contact">Schedule an architectural consultation</a> with the KodMates engineering team.</p>
+        </div>
       `
     }
   ]

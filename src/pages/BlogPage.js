@@ -1,12 +1,22 @@
 /**
  * BlogPage Component
- * Step 06 - Step 11:
- * Comprehensive Blog Listing Experience with editorial Hero, Featured Deep Dive,
- * Category Filter Pills, Live Search, Responsive Grid, and Accessible State.
+ * Orchestrates:
+ * 1. View 1 (Main Blog Listing Page):
+ *    - Editorial Hero with "Ideas That Move Technology Forward." & 4 Publication Benefits
+ *    - Search input and Sort dropdown
+ *    - Category Filter Pills
+ *    - Featured Article with technical illustration on right
+ *    - Latest Engineering Guides section with balanced responsive grid
+ *    - Bottom Technical Question CTA
+ * 2. View 3 (Category-Filtered Topic Listing):
+ *    - "BROWSE BY TOPIC" header with gold wave background & inline search
+ *    - Category Filter Pills
+ *    - Matching article cards grid
+ *    - Bottom Technical Question CTA
  */
 
 import { getAllArticles, filterArticles, getFeaturedArticle } from '../data/blog/index.js';
-import { createBlogHero } from '../components/blog/BlogHero.js';
+import { createBlogHero, createTopicHero } from '../components/blog/BlogHero.js';
 import { createFeaturedArticle } from '../components/blog/FeaturedArticle.js';
 import { createBlogFilters } from '../components/blog/BlogFilters.js';
 import { createBlogCard } from '../components/blog/BlogCard.js';
@@ -16,38 +26,74 @@ export class BlogPage {
   constructor(options = {}) {
     this.target = options.target || document.getElementById('main-content');
     this.pageEl = null;
-    this.activeCategory = 'All';
-    this.searchQuery = '';
+    
+    // Check URL search parameters or hash for initial category
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialCat = options.category || urlParams.get('category') || 'All';
+
+    this.activeCategory = initialCat;
+    this.searchQuery = options.search || urlParams.get('search') || '';
+    this.sortBy = 'latest';
     this.allArticles = getAllArticles();
     this.featuredArticle = getFeaturedArticle();
 
     this._handleCategoryClick = this._handleCategoryClick.bind(this);
     this._handleSearchInput = this._handleSearchInput.bind(this);
     this._handleSearchClear = this._handleSearchClear.bind(this);
+    this._handleSortChange = this._handleSortChange.bind(this);
   }
 
   getFilteredList() {
-    return filterArticles(this.allArticles, {
+    let list = filterArticles(this.allArticles, {
       category: this.activeCategory,
       search: this.searchQuery
     });
+
+    // Apply sorting
+    if (this.sortBy === 'oldest') {
+      list = [...list].sort((a, b) => new Date(a.publishedAt) - new Date(b.publishedAt));
+    } else if (this.sortBy === 'readtime') {
+      const getMins = (str) => parseInt(str || '5', 10) || 5;
+      list = [...list].sort((a, b) => getMins(b.readTime) - getMins(a.readTime));
+    } else {
+      // Default: latest first
+      list = [...list].sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+    }
+
+    return list;
   }
 
   renderHTML() {
-    const heroMarkup = createBlogHero();
-    const featuredMarkup = (!this.searchQuery && this.activeCategory === 'All' && this.featuredArticle)
+    const isCategoryView = this.activeCategory !== 'All';
+    const isDefaultView = !this.searchQuery && !isCategoryView;
+
+    // Header Hero: Editorial Hero (View 1) vs Topic Hero (View 3)
+    const heroMarkup = isCategoryView
+      ? createTopicHero({ category: this.activeCategory, searchValue: this.searchQuery })
+      : createBlogHero();
+
+    // Featured Article (only rendered on main default view)
+    const featuredMarkup = (isDefaultView && this.featuredArticle)
       ? createFeaturedArticle(this.featuredArticle)
       : '';
 
     const filtered = this.getFilteredList();
+
+    // Standard grid articles: exclude featured card if default view to avoid duplicate
+    const gridArticles = (isDefaultView && this.featuredArticle)
+      ? filtered.filter((art) => art.slug !== this.featuredArticle.slug)
+      : filtered;
+
     const filtersMarkup = createBlogFilters({
       activeCategory: this.activeCategory,
       searchValue: this.searchQuery,
+      sortBy: this.sortBy,
+      showSearchBar: !isCategoryView, // Topic hero has its own inline search
       count: filtered.length
     });
 
-    const cardsMarkup = filtered.length > 0
-      ? filtered.map((art) => createBlogCard(art)).join('')
+    const cardsMarkup = gridArticles.length > 0
+      ? gridArticles.map((art) => createBlogCard(art)).join('')
       : `
         <div class="blog-empty-state" role="status">
           <div class="blog-empty-state__icon" aria-hidden="true">
@@ -58,7 +104,7 @@ export class BlogPage {
           </div>
           <h3 class="blog-empty-state__title">No articles found</h3>
           <p class="blog-empty-state__desc">
-            No engineering publications matched the filter "${this.searchQuery || this.activeCategory}". Try adjusting your keywords or clearing the category filter.
+            No engineering publications matched the query "${this.searchQuery || this.activeCategory}". Try adjusting your keywords or clearing the category filter.
           </p>
           <button type="button" class="cta-button blog-empty-state__reset" id="blog-reset-filters-btn">
             Reset Filters
@@ -67,22 +113,27 @@ export class BlogPage {
       `;
 
     return `
-      <div class="blog-page" id="blog-page">
+      <div class="blog-page ${isCategoryView ? 'blog-page--category-view' : ''}" id="blog-page">
         ${heroMarkup}
         
         <div class="blog-page__container">
+          <!-- Search & Filters Toolbar (Positioned directly above featured guide matching reference) -->
+          <div id="blog-filters-container" class="blog-filters-container">
+            ${filtersMarkup}
+          </div>
+
+          <!-- Featured Article Banner (Only on default view) -->
           ${featuredMarkup}
           
+          <!-- Latest Engineering Guides Section -->
           <section class="blog-listing-section" aria-label="Engineering Articles">
-            <div class="blog-listing-section__header">
+            <div class="blog-listing-section__header" style="${(!isDefaultView && !this.searchQuery) ? 'display:none;' : ''}">
               <div class="blog-listing-section__title-group">
-                <span class="blog-section-eyebrow">EXPLORE PUBLICATIONS</span>
-                <h2 class="blog-section-title">All Technical Articles</h2>
+                <h2 class="blog-section-title">
+                  <span class="blog-section-title__accent" aria-hidden="true">&#9654;</span>
+                  ${isDefaultView ? 'Latest Engineering Guides' : `Matching Articles (${gridArticles.length})`}
+                </h2>
               </div>
-            </div>
-
-            <div id="blog-filters-container">
-              ${filtersMarkup}
             </div>
 
             <div class="blog-grid" id="blog-grid" role="region" aria-label="Articles list">
@@ -90,19 +141,18 @@ export class BlogPage {
             </div>
           </section>
 
-          <!-- Bottom Topic Advisory CTA -->
-          <section class="blog-advisory-cta" aria-label="Suggest a Topic">
+          <!-- Bottom Technical Question / Project Discussion CTA matching Reference -->
+          <section class="blog-advisory-cta" aria-label="Technical Consultation">
             <div class="blog-advisory-cta__card">
               <div class="blog-advisory-cta__text">
-                <span class="blog-advisory-eyebrow">TECHNICAL DISCUSSIONS</span>
-                <h3 class="blog-advisory-title">Facing a Specific Engineering Hurdle?</h3>
+                <h3 class="blog-advisory-title">Have a Technical Question or a Project in Mind?</h3>
                 <p class="blog-advisory-desc">
-                  Our core team regularly collaborates with businesses to solve distributed system bottlenecks, API architecture, and database performance.
+                  Discuss your requirements with our engineering team and get practical guidance for your specific use case.
                 </p>
               </div>
               <div class="blog-advisory-cta__action">
                 <a href="/contact" class="cta-button" id="blog-consult-cta">
-                  <span>Consult With Us</span>
+                  <span>Start a Discussion</span>
                   <span class="cta-arrow" aria-hidden="true">→</span>
                 </a>
               </div>
@@ -148,13 +198,21 @@ export class BlogPage {
       clearBtn.addEventListener('click', this._handleSearchClear);
     }
 
+    // Sort select change
+    const sortSelect = this.pageEl.querySelector('#blog-sort-select');
+    if (sortSelect) {
+      sortSelect.addEventListener('change', this._handleSortChange);
+    }
+
     // Reset filters button in empty state
     const resetBtn = this.pageEl.querySelector('#blog-reset-filters-btn');
     if (resetBtn) {
       resetBtn.addEventListener('click', () => {
         this.activeCategory = 'All';
         this.searchQuery = '';
-        this.updateFilteredView();
+        this.sortBy = 'latest';
+        this.updateURL();
+        this.reRenderPage();
       });
     }
   }
@@ -167,12 +225,13 @@ export class BlogPage {
     if (!selectedCategory || selectedCategory === this.activeCategory) return;
 
     this.activeCategory = selectedCategory;
-    this.updateFilteredView();
+    this.updateURL();
+    this.reRenderPage();
   }
 
   _handleSearchInput(e) {
     this.searchQuery = e.target.value;
-    this.updateFilteredView();
+    this.updateGridOnly();
   }
 
   _handleSearchClear() {
@@ -182,43 +241,73 @@ export class BlogPage {
       searchInput.value = '';
       searchInput.focus();
     }
-    this.updateFilteredView();
+    this.updateGridOnly();
   }
 
-  updateFilteredView() {
+  _handleSortChange(e) {
+    this.sortBy = e.target.value;
+    this.updateGridOnly();
+  }
+
+  updateURL() {
+    const params = new URLSearchParams();
+    if (this.activeCategory && this.activeCategory !== 'All') {
+      params.set('category', this.activeCategory);
+    }
+    if (this.searchQuery) {
+      params.set('search', this.searchQuery);
+    }
+    const queryString = params.toString();
+    const newPath = queryString ? `/blog?${queryString}` : '/blog';
+    window.history.replaceState({}, '', newPath);
+  }
+
+  reRenderPage() {
+    const newTemp = document.createElement('div');
+    newTemp.innerHTML = this.renderHTML().trim();
+    const newEl = newTemp.firstElementChild;
+
+    if (this.pageEl && this.pageEl.parentNode) {
+      this.pageEl.parentNode.replaceChild(newEl, this.pageEl);
+      this.pageEl = newEl;
+      this.bindEvents();
+    }
+  }
+
+  updateGridOnly() {
     if (!this.pageEl) return;
 
-    // Update filters toolbar
-    const filtersContainer = this.pageEl.querySelector('#blog-filters-container');
+    const isCategoryView = this.activeCategory !== 'All';
+    const isDefaultView = !this.searchQuery && !isCategoryView;
     const filtered = this.getFilteredList();
 
-    if (filtersContainer) {
-      filtersContainer.innerHTML = createBlogFilters({
-        activeCategory: this.activeCategory,
-        searchValue: this.searchQuery,
-        count: filtered.length
-      });
+    const gridArticles = (isDefaultView && this.featuredArticle)
+      ? filtered.filter((art) => art.slug !== this.featuredArticle.slug)
+      : filtered;
 
-      // Re-bind search input & clear button inside updated toolbar
-      const searchInput = filtersContainer.querySelector('#blog-search-input');
-      if (searchInput) {
-        searchInput.addEventListener('input', this._handleSearchInput);
-        searchInput.focus();
-        // Restore cursor to end of text
-        const len = searchInput.value.length;
-        searchInput.setSelectionRange(len, len);
-      }
-      const clearBtn = filtersContainer.querySelector('#blog-search-clear');
-      if (clearBtn) {
-        clearBtn.addEventListener('click', this._handleSearchClear);
+    // Toggle featured section visibility
+    const featuredEl = this.pageEl.querySelector('.blog-featured');
+    if (featuredEl) {
+      featuredEl.style.display = isDefaultView ? '' : 'none';
+    }
+
+    // Toggle section header title
+    const sectionHeader = this.pageEl.querySelector('.blog-listing-section__header');
+    if (sectionHeader) {
+      sectionHeader.style.display = (isDefaultView || this.searchQuery) ? '' : 'none';
+      const titleText = sectionHeader.querySelector('.blog-section-title');
+      if (titleText) {
+        titleText.innerHTML = `
+          <span class="blog-section-title__accent" aria-hidden="true">&#9654;</span>
+          ${isDefaultView ? 'Latest Engineering Guides' : `Matching Articles (${gridArticles.length})`}
+        `;
       }
     }
 
-    // Update Grid
     const grid = this.pageEl.querySelector('#blog-grid');
     if (grid) {
-      if (filtered.length > 0) {
-        grid.innerHTML = filtered.map((art) => createBlogCard(art)).join('');
+      if (gridArticles.length > 0) {
+        grid.innerHTML = gridArticles.map((art) => createBlogCard(art)).join('');
       } else {
         grid.innerHTML = `
           <div class="blog-empty-state" role="status">
@@ -242,7 +331,9 @@ export class BlogPage {
           resetBtn.addEventListener('click', () => {
             this.activeCategory = 'All';
             this.searchQuery = '';
-            this.updateFilteredView();
+            this.sortBy = 'latest';
+            this.updateURL();
+            this.reRenderPage();
           });
         }
       }

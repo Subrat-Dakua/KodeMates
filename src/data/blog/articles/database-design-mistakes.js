@@ -69,6 +69,10 @@ await db.transaction(async (trx) => {
 const reservation = await db('accounts').where({ id }).decrement('balance', amount);
 const payment = await stripe.charges.create({ ... });
 await db('ledger').insert({ ... });</code></pre>
+        <div class="article-callout">
+          <div class="article-callout__title">Engineering Consultation</div>
+          <p>Navigating database migration risks or optimizing query performance under heavy write loads? <a href="/contact">Consult with KodMates database engineers</a> to review your schema architecture.</p>
+        </div>
       `
     }
   ]

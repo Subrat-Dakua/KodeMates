@@ -82,6 +82,10 @@ fun TaskCard(
       content: `
         <p>Unlike controlled single-hardware ecosystems, Android operates across thousands of device models, screen aspect ratios, processor tiers, and RAM configurations. Testing across budget devices with low memory headroom is as vital as validating on flagship devices.</p>
         <p>Enforce strict image bitmap downsampling with libraries like Coil, monitor garbage collection churn, and avoid memory leaks caused by lingering Activity references in long-lived singletons.</p>
+        <div class="article-callout">
+          <div class="article-callout__title">Mobile Engineering Collaboration</div>
+          <p>Planning a resilient Android application with offline-first synchronization? <a href="/contact">Talk with our mobile engineering leads</a> to evaluate architecture and API contracts.</p>
+        </div>
       `
     }
   ]

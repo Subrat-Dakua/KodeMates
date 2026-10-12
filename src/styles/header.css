@@ -178,36 +178,34 @@
   color: var(--km-text-nav-hover);
 }
 
-/* Subtle Active State (Understated warm gold indicator) */
+/* Active State: Champagne Gold text with thin underline spanning the link */
 .nav-link.is-active {
-  color: var(--km-accent-primary);
-  font-weight: 600;
+  color: #F4D779;
+  font-weight: 500;
 }
 
 .nav-link.is-active::after {
   content: '';
   position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 14px;
-  height: 2px;
-  border-radius: 999px;
-  background-color: var(--km-accent-primary);
-  box-shadow: 0 0 6px rgba(254, 239, 184, 0.45);
+  bottom: -2px;
+  left: 4px;
+  right: 4px;
+  height: 1.5px;
+  background-color: #F4D779;
+  border-radius: 1px;
 }
 
 /* Understated micro-underline on hover for inactive links */
 .nav-link:not(.is-active)::after {
   content: '';
   position: absolute;
-  bottom: 2px;
+  bottom: -2px;
   left: 50%;
   transform: translateX(-50%) scaleX(0);
-  width: 12px;
+  width: 16px;
   height: 1.5px;
-  border-radius: 999px;
-  background-color: rgba(254, 239, 184, 0.5);
+  border-radius: 1px;
+  background-color: rgba(244, 215, 121, 0.5);
   transition: transform var(--km-transition-fast), opacity var(--km-transition-fast);
   opacity: 0;
 }
@@ -219,7 +217,7 @@
 
 /* ==================================================
    RIGHT — CTA BUTTON (~25% area)
-   Refined, restrained, 42px height, 18px padding, soft lift
+   Outlined champagne gold button as shown in reference
    ================================================== */
 .header-cta {
   flex: 1 1 0%;
@@ -227,6 +225,40 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
+}
+
+.header-cta .cta-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0 16px;
+  background-color: transparent;
+  color: #F4D779;
+  font-family: var(--km-font-family);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-radius: 6px;
+  border: 1px solid #F4D779;
+  cursor: pointer;
+  line-height: 1;
+  transition: 
+    background-color var(--km-transition-fast),
+    border-color var(--km-transition-fast),
+    color var(--km-transition-fast),
+    transform var(--km-transition-fast),
+    box-shadow var(--km-transition-fast);
+  white-space: nowrap;
+}
+
+.header-cta .cta-button:hover {
+  background-color: rgba(244, 215, 121, 0.08);
+  color: #FFE6A0;
+  border-color: #FFE6A0;
+  transform: translateY(-1px);
+  box-shadow: 0 0 12px rgba(244, 215, 121, 0.2);
 }
 
 .cta-button {

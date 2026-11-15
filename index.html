@@ -44,7 +44,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" />
   </noscript>
 
-  <!-- Theme & DOM Initializer -->
+  <!-- Theme Initializer -->
   <script>
     (function() {
       try {
@@ -52,20 +52,6 @@
         const theme = saved || 'dark';
         document.documentElement.setAttribute('data-theme', theme);
       } catch (e) {}
-
-      // Robust DOM guard against concurrent portal removeChild errors
-      if (typeof Node !== 'undefined' && Node.prototype) {
-        const origRemoveChild = Node.prototype.removeChild;
-        Node.prototype.removeChild = function(child) {
-          if (child && child.parentNode !== this) {
-            if (child.parentNode) {
-              return child.parentNode.removeChild(child);
-            }
-            return child;
-          }
-          return origRemoveChild.apply(this, arguments);
-        };
-      }
     })();
   </script>
 

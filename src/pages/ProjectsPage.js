@@ -1,3 +1,4 @@
+import '../styles/projects.css';
 import projects from '../data/projects/index.js';
 import { createProjectCard } from '../components/projects/ProjectCard.js';
 import { createProjectFilters, getCategories } from '../components/projects/ProjectFilters.js';

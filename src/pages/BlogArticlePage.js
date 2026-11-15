@@ -11,6 +11,7 @@
  * - Related articles at the bottom.
  */
 
+import '../styles/blog-article.css';
 import { getArticleBySlug, getRelatedArticles } from '../data/blog/index.js';
 import { createBlogCard } from '../components/blog/BlogCard.js';
 import { updateArticleSEO } from '../components/blog/BlogSEO.js';

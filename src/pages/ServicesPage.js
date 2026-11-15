@@ -1,3 +1,4 @@
+import '../styles/services.css';
 import servicesData from '../data/services.js';
 import { updateServicesSEO } from '../components/services/ServicesSEO.js';
 

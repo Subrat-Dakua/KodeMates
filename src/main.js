@@ -16,12 +16,6 @@ import './styles/theme.css';
 import './styles/header.css';
 import './styles/hero.css';
 import './styles/sections.css';
-import './styles/projects.css';
-import './styles/project-case-study.css';
-import './styles/services.css';
-import './styles/contact.css';
-import './styles/blog.css';
-import './styles/blog-article.css';
 import './styles/footer.css';
 
 import { initHeader } from './components/Header.js';

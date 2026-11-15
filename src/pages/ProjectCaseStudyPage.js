@@ -1,3 +1,4 @@
+import '../styles/project-case-study.css';
 import projects from '../data/projects/index.js';
 import { getProjectInitials } from '../components/projects/ProjectCard.js';
 import { createProjectGallery, initGalleryInteractions } from '../components/projects/ProjectGallery.js';

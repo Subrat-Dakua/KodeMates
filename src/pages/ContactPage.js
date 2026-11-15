@@ -8,6 +8,7 @@
  * - Section F: Final consultation banner ("Have a Complex Project in Mind?")
  */
 
+import '../styles/contact.css';
 import { createContactHero } from '../components/contact/ContactHero.js';
 import { createContactInfo } from '../components/contact/ContactInfo.js';
 import { createContactFormHTML, isValidEmail } from '../components/contact/ContactForm.js';

@@ -15,6 +15,7 @@
  *    - Bottom Technical Question CTA
  */
 
+import '../styles/blog.css';
 import { getAllArticles, filterArticles, getFeaturedArticle } from '../data/blog/index.js';
 import { createBlogHero, createTopicHero } from '../components/blog/BlogHero.js';
 import { createFeaturedArticle } from '../components/blog/FeaturedArticle.js';

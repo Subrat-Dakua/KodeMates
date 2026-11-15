@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [react()],
   build: {
     target: 'es2022',
+    sourcemap: true,
     chunkSizeWarningLimit: 1500,
     cssCodeSplit: true,
     rollupOptions: {

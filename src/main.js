@@ -31,16 +31,8 @@ import { initBlogSection } from './components/BlogSection.js';
 import { initContactSection } from './components/ContactSection.js';
 import { initFooterSection } from './components/FooterSection.js';
 
-// Dedicated Sub-Page Controllers
-import { initProjectsPage } from './pages/ProjectsPage.js';
-import { initProjectCaseStudyPage } from './pages/ProjectCaseStudyPage.js';
-import { initServicesPage } from './pages/ServicesPage.js';
-import { initContactPage } from './pages/ContactPage.js';
-import { initBlogPage } from './pages/BlogPage.js';
-import { initBlogArticlePage } from './pages/BlogArticlePage.js';
-
-// Data Registries & SEO Providers
-import { getProjectBySlug } from './data/projects/index.js';
+// Dedicated Sub-Page Controllers & Registries are lazily loaded on-demand
+// to guarantee an ultra-lightweight initial bundle and instant First Contentful Paint.
 import { resetProjectSEO } from './components/projects/ProjectSEO.js';
 import { resetServicesSEO } from './components/services/ServicesSEO.js';
 import { resetBlogSEO } from './components/blog/BlogSEO.js';
@@ -174,7 +166,7 @@ export function parseRoute() {
  * Universal Route Renderer
  * Mounts the appropriate full-page controller or restores the homepage ecosystem
  */
-export function renderRoute() {
+export async function renderRoute() {
   const route = parseRoute();
   const heroEl = document.getElementById('hero');
   const mainContent = document.getElementById('main-content');
@@ -188,6 +180,7 @@ export function renderRoute() {
     homeSections.forEach(s => (s.style.display = 'none'));
 
     if (mainContent) {
+      const { initServicesPage } = await import('./pages/ServicesPage.js');
       activeServicesPage = initServicesPage({ target: mainContent });
     }
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -197,6 +190,7 @@ export function renderRoute() {
     homeSections.forEach(s => (s.style.display = 'none'));
 
     if (mainContent) {
+      const { initProjectsPage } = await import('./pages/ProjectsPage.js');
       activeProjectsPage = initProjectsPage({ target: mainContent });
     }
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -206,6 +200,10 @@ export function renderRoute() {
     homeSections.forEach(s => (s.style.display = 'none'));
 
     if (mainContent) {
+      const [{ getProjectBySlug }, { initProjectCaseStudyPage }] = await Promise.all([
+        import('./data/projects/index.js'),
+        import('./pages/ProjectCaseStudyPage.js')
+      ]);
       const project = getProjectBySlug(route.slug);
       activeCaseStudyPage = initProjectCaseStudyPage({
         target: mainContent,
@@ -220,6 +218,7 @@ export function renderRoute() {
     homeSections.forEach(s => (s.style.display = 'none'));
 
     if (mainContent) {
+      const { initBlogPage } = await import('./pages/BlogPage.js');
       activeBlogPage = initBlogPage({ target: mainContent });
     }
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -229,6 +228,7 @@ export function renderRoute() {
     homeSections.forEach(s => (s.style.display = 'none'));
 
     if (mainContent) {
+      const { initBlogArticlePage } = await import('./pages/BlogArticlePage.js');
       activeBlogArticlePage = initBlogArticlePage({ target: mainContent, slug: route.slug });
     }
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -238,6 +238,7 @@ export function renderRoute() {
     homeSections.forEach(s => (s.style.display = 'none'));
 
     if (mainContent) {
+      const { initContactPage } = await import('./pages/ContactPage.js');
       activeContactPage = initContactPage({ target: mainContent });
     }
     window.scrollTo({ top: 0, behavior: 'instant' });

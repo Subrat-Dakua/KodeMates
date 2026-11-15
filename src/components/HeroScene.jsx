@@ -42,48 +42,7 @@ const SERVICE_INFO = {
  * Lightweight Loading Fallback for Suspense
  */
 export function HeroLoadingFallback() {
-  return (
-    <Html center>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '12px',
-          padding: '16px 24px',
-          background: 'rgba(10, 15, 16, 0.85)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '12px',
-          border: '1px solid rgba(254, 239, 184, 0.25)',
-          boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
-          pointerEvents: 'none'
-        }}
-      >
-        <div
-          style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            border: '2px solid rgba(254, 239, 184, 0.2)',
-            borderTopColor: '#feefb8',
-            animation: 'spin 1s linear infinite'
-          }}
-        />
-        <span
-          style={{
-            fontSize: '11px',
-            fontFamily: 'monospace',
-            letterSpacing: '0.12em',
-            color: '#feefb8',
-            textTransform: 'uppercase'
-          }}
-        >
-          Loading 3D Ecosystem
-        </span>
-      </div>
-    </Html>
-  );
+  return null;
 }
 
 /**
@@ -824,7 +783,7 @@ export default function HeroScene({ className = '', style = {} }) {
           />
         )}
 
-        <Suspense fallback={<HeroLoadingFallback />}>
+        <Suspense fallback={null}>
           <EcosystemModel
             prefersReducedMotion={prefersReducedMotion}
             isMobile={isMobile}

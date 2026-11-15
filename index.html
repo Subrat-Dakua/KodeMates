@@ -32,12 +32,15 @@
   <meta name="twitter:description" content="Kodmates architects and engineers mission-critical web applications, native Android software, and cloud infrastructure for growing businesses." />
   <meta name="twitter:image" content="https://kodmates.com/assets/hero-bg-landscape.jpg" />
 
+  <!-- Preload Critical LCP Image -->
+  <link rel="preload" as="image" href="/assets/hero-bg-landscape.jpg" fetchpriority="high" />
+
   <!-- Google Fonts: Plus Jakarta Sans & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" />
 
-  <!-- Theme Initializer (prevents flash of wrong theme) -->
+  <!-- Theme & DOM Initializer -->
   <script>
     (function() {
       try {
@@ -45,6 +48,20 @@
         const theme = saved || 'dark';
         document.documentElement.setAttribute('data-theme', theme);
       } catch (e) {}
+
+      // Robust DOM guard against concurrent portal removeChild errors
+      if (typeof Node !== 'undefined' && Node.prototype) {
+        const origRemoveChild = Node.prototype.removeChild;
+        Node.prototype.removeChild = function(child) {
+          if (child && child.parentNode !== this) {
+            if (child.parentNode) {
+              return child.parentNode.removeChild(child);
+            }
+            return child;
+          }
+          return origRemoveChild.apply(this, arguments);
+        };
+      }
     })();
   </script>
 
@@ -118,7 +135,7 @@
         <!-- Subtle dark landscape horizon & ambient warm atmospheric illumination -->
         <div class="hero-ambient-glow" aria-hidden="true"></div>
         <div class="hero-ambient-landscape" aria-hidden="true">
-          <img src="/assets/hero-bg-landscape.jpg" alt="" class="hero-landscape-img" loading="eager" />
+          <img src="/assets/hero-bg-landscape.jpg" alt="" class="hero-landscape-img" loading="eager" fetchpriority="high" />
         </div>
 
         <div class="hero-container">

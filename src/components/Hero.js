@@ -20,7 +20,7 @@ export class Hero {
         <!-- Subtle dark landscape horizon & ambient warm atmospheric illumination -->
         <div class="hero-ambient-glow" aria-hidden="true"></div>
         <div class="hero-ambient-landscape" aria-hidden="true">
-          <img src="/assets/hero-bg-landscape.jpg?v=3" alt="" class="hero-landscape-img" loading="eager" />
+          <img src="/assets/hero-bg-landscape.jpg" alt="" class="hero-landscape-img" loading="eager" fetchpriority="high" />
         </div>
 
         <div class="hero-container">
@@ -127,7 +127,9 @@ export class Hero {
         const { mountHeroScene } = await import('./HeroSceneMount.jsx');
         this.reactHeroRoot = mountHeroScene(wrapper);
       } catch (err) {
-        console.warn('3D Hero Scene fallback activated:', err);
+        if (import.meta.env?.DEV) {
+          console.warn('3D Hero Scene fallback activated:', err);
+        }
         if (fallback) fallback.style.display = 'block';
       }
     };

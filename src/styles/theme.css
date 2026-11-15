@@ -322,36 +322,93 @@
 }
 
 [data-theme="light"] .service-card-title,
+[data-theme="light"] .service-title,
 [data-theme="light"] .project-card-title,
+[data-theme="light"] .project-title,
 [data-theme="light"] .process-step-title,
 [data-theme="light"] .about-pillar-title,
 [data-theme="light"] .about-stat-number,
 [data-theme="light"] .blog-card-title,
+[data-theme="light"] .blog-title,
 [data-theme="light"] .contact-info-title,
-[data-theme="light"] .contact-form-title {
+[data-theme="light"] .contact-form-title,
+[data-theme="light"] .capability-label {
   color: #0F172A !important;
 }
 
 [data-theme="light"] .service-card-desc,
+[data-theme="light"] .service-desc,
 [data-theme="light"] .project-card-desc,
+[data-theme="light"] .project-summary,
+[data-theme="light"] .project-metric span,
+[data-theme="light"] .project-metrics-row span,
 [data-theme="light"] .process-step-desc,
 [data-theme="light"] .about-pillar-desc,
 [data-theme="light"] .about-stat-label,
 [data-theme="light"] .blog-card-excerpt,
+[data-theme="light"] .blog-excerpt,
+[data-theme="light"] .blog-read-time,
+[data-theme="light"] .blog-meta-date,
+[data-theme="light"] .blog-meta-row span,
 [data-theme="light"] .contact-info-desc,
-[data-theme="light"] .contact-form-subtitle {
+[data-theme="light"] .contact-form-subtitle,
+[data-theme="light"] .capability-desc {
   color: #334155 !important;
+}
+
+[data-theme="light"] .form-optional-tag,
+[data-theme="light"] .form-char-count {
+  color: #64748B !important;
 }
 
 /* Badges & Tags */
 [data-theme="light"] .service-tag,
 [data-theme="light"] .project-tag,
+[data-theme="light"] .project-tech-chip,
 [data-theme="light"] .tech-chip,
 [data-theme="light"] .blog-card-tag,
 [data-theme="light"] .blog-tag {
   background: #F1F5F9 !important;
-  color: #334155 !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #1E293B !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Footer Contrast Guard (Preserves Pristine High Contrast on Dark Footer) */
+[data-theme="light"] .site-footer .brand-logo__name,
+[data-theme="light"] footer .brand-logo__name {
+  color: #FFFFFF !important;
+}
+
+[data-theme="light"] .site-footer .brand-logo__tagline,
+[data-theme="light"] footer .brand-logo__tagline {
+  color: #CBD5E1 !important;
+}
+
+[data-theme="light"] .site-footer .footer-col-title,
+[data-theme="light"] footer .footer-col-title {
+  color: #FEEFB8 !important;
+}
+
+[data-theme="light"] .site-footer .footer-link,
+[data-theme="light"] footer .footer-link {
+  color: #E2E8F0 !important;
+}
+
+[data-theme="light"] .site-footer .footer-copyright,
+[data-theme="light"] footer .footer-copyright {
+  color: #CBD5E1 !important;
+}
+
+[data-theme="light"] .site-footer .footer-back-to-top,
+[data-theme="light"] footer .footer-back-to-top {
+  background: rgba(254, 239, 184, 0.08) !important;
+  border-color: rgba(254, 239, 184, 0.25) !important;
+  color: #FEEFB8 !important;
+}
+
+[data-theme="light"] .site-footer .footer-back-to-top span,
+[data-theme="light"] footer .footer-back-to-top span {
+  color: #FEEFB8 !important;
 }
 
 /* Filter Buttons */

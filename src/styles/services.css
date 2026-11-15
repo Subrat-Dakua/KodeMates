@@ -611,7 +611,7 @@
   font-family: var(--km-font-family);
   font-size: 12px;
   font-weight: 700;
-  color: rgba(254, 239, 184, 0.45);
+  color: var(--km-accent-primary, #FEEFB8);
   letter-spacing: 0.1em;
 }
 

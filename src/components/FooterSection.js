@@ -53,7 +53,7 @@ export function createFooterSection() {
           <div>
             <div class="footer-col-title">Direct Inquiries</div>
             <ul class="footer-links-list">
-              <li><a href="mailto:hello@kodmates.com" class="footer-link">hello@kodmates.com</a></li>
+              <li><a href="mailto:info@kodmates.com" class="footer-link">info@kodmates.com</a></li>
               <li><span style="color: rgba(240,242,238,0.55); font-size: 13px;">Bhubaneswar, Odisha, India</span></li>
               <li><span style="color: rgba(240,242,238,0.55); font-size: 13px;">Remote Global Operations</span></li>
             </ul>

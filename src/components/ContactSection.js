@@ -29,7 +29,7 @@ export function createContactSection() {
                   </div>
                   <div>
                     <div class="contact-direct-label">Direct Engineering Inquiries</div>
-                    <a href="mailto:hello@kodmates.com" class="contact-direct-val">hello@kodmates.com</a>
+                    <a href="mailto:info@kodmates.com" class="contact-direct-val">info@kodmates.com</a>
                   </div>
                 </div>
 
@@ -155,7 +155,7 @@ export function initContactSection() {
     }
   });
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     let isValid = true;
@@ -198,43 +198,76 @@ export function initContactSection() {
       return;
     }
 
-    // Authentic Client Submission Handling:
-    // Format mailto link and provide one-click dispatch / copy capability
-    const subject = encodeURIComponent(`Project Inquiry: ${typeSelect.value} - ${nameVal}`);
-    const bodyContent = encodeURIComponent(
-      `Name: ${nameVal}\nEmail: ${emailVal}\nSystem Type: ${typeSelect.value}\nBudget: ${budgetSelect.value}\n\nProject Overview:\n${msgVal}`
-    );
-    const mailtoUrl = `mailto:hello@kodmates.com?subject=${subject}&body=${bodyContent}`;
+    const submitBtn = form.querySelector('#contact-submit-btn');
+    const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '<span>Send Inquiry</span><span class="cta-arrow">→</span>';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Transmitting to info@kodmates.com...</span>';
+    }
 
-    statusAlert.className = 'form-status-alert is-success';
-    statusAlert.innerHTML = `
-      <div style="font-weight: 700; margin-bottom: 6px;">✓ Inquiry Details Formatted</div>
-      <p style="margin-bottom: 12px; font-size: 13px; color: rgba(240,242,238,0.9);">
-        Thank you, <strong>${nameVal}</strong>! To send directly to our engineering team without intermediary tracking:
-      </p>
-      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <a href="${mailtoUrl}" class="cta-button" style="padding: 8px 16px; font-size: 13px; text-decoration: none;">
-          <span>Open in Mail Client</span>
-          <span aria-hidden="true">↗</span>
-        </a>
-        <button type="button" id="copy-inquiry-btn" class="project-detail-btn" style="padding: 8px 14px; font-size: 12.5px;">
-          <span>Copy Inquiry Text</span>
-        </button>
-      </div>
-    `;
-    statusAlert.style.display = 'block';
-
-    const copyBtn = document.getElementById('copy-inquiry-btn');
-    if (copyBtn) {
-      copyBtn.addEventListener('click', () => {
-        const textToCopy = `Name: ${nameVal}\nEmail: ${emailVal}\nSystem Type: ${typeSelect.value}\nBudget: ${budgetSelect.value}\n\nProject Overview:\n${msgVal}`;
-        navigator.clipboard.writeText(textToCopy).then(() => {
-          copyBtn.innerHTML = '<span>✓ Copied to Clipboard</span>';
-          setTimeout(() => {
-            copyBtn.innerHTML = '<span>Copy Inquiry Text</span>';
-          }, 3000);
-        });
+    try {
+      const response = await fetch('https://formsubmit.co/ajax/info@kodmates.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          name: nameVal,
+          email: emailVal,
+          systemType: typeSelect.value,
+          budget: budgetSelect.value,
+          message: msgVal,
+          _subject: `New Project Inquiry: ${typeSelect.value} - ${nameVal}`,
+          _replyto: emailVal,
+          _template: 'table'
+        })
       });
+
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        statusAlert.className = 'form-status-alert is-success';
+        statusAlert.innerHTML = `
+          <div style="font-weight: 700; margin-bottom: 6px; font-size: 15px; color: #10B981;">✓ Inquiry Sent Successfully</div>
+          <p style="margin-bottom: 8px; font-size: 13.5px; color: rgba(240,242,238,0.95);">
+            Thank you, <strong>${nameVal}</strong>! Your inquiry has been delivered directly to <strong>info@kodmates.com</strong>.
+          </p>
+          <p style="font-size: 12.5px; color: var(--km-accent-primary, #FEEFB8); margin: 0;">
+            Our senior engineering team will review your specifications and reply to <strong>${emailVal}</strong> within 24 business hours.
+          </p>
+        `;
+        statusAlert.style.display = 'block';
+        form.reset();
+      } else {
+        throw new Error(data.message || 'Dispatch error');
+      }
+    } catch (err) {
+      // Direct Email Fallback
+      const subject = encodeURIComponent(`Project Inquiry: ${typeSelect.value} - ${nameVal}`);
+      const bodyContent = encodeURIComponent(
+        `Name: ${nameVal}\nEmail: ${emailVal}\nSystem Type: ${typeSelect.value}\nBudget: ${budgetSelect.value}\n\nProject Overview:\n${msgVal}`
+      );
+      const mailtoUrl = `mailto:info@kodmates.com?subject=${subject}&body=${bodyContent}`;
+
+      statusAlert.className = 'form-status-alert is-success';
+      statusAlert.innerHTML = `
+        <div style="font-weight: 700; margin-bottom: 6px; font-size: 15px;">✓ Inquiry Details Prepared</div>
+        <p style="margin-bottom: 12px; font-size: 13px; color: rgba(240,242,238,0.92);">
+          Thank you, <strong>${nameVal}</strong>! Send this inquiry directly to our engineering mailbox:
+        </p>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <a href="${mailtoUrl}" class="cta-button" style="padding: 8px 16px; font-size: 13px; text-decoration: none;">
+            <span>Send to info@kodmates.com</span>
+            <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      `;
+      statusAlert.style.display = 'block';
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnHtml;
+      }
     }
   });
 }

@@ -227,17 +227,34 @@ export class ContactPage {
     // If a live backend endpoint is configured, perform transmission
     if (CONTACT_CONFIG.backendIntegration.endpointUrl) {
       try {
+        const formSubmitBody = {
+          Name: fullNameInput.value.trim(),
+          Email: emailInput.value.trim(),
+          Company: companyInput.value.trim() || 'Not specified',
+          Service: serviceInput.options[serviceInput.selectedIndex]?.text || serviceInput.value,
+          Budget: budgetInput.value ? (budgetInput.options[budgetInput.selectedIndex]?.text || budgetInput.value) : 'Flexible / To be estimated',
+          Timeline: timelineInput.value ? (timelineInput.options[timelineInput.selectedIndex]?.text || timelineInput.value) : 'Flexible / Standard milestones',
+          Message: descInput.value.trim(),
+          _subject: `New Project Inquiry: ${serviceInput.options[serviceInput.selectedIndex]?.text || serviceInput.value} — ${fullNameInput.value.trim()}`,
+          _replyto: emailInput.value.trim(),
+          _template: 'table'
+        };
+
         const response = await fetch(CONTACT_CONFIG.backendIntegration.endpointUrl, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(formSubmitBody)
         });
 
-        if (response.ok) {
+        const data = await response.json().catch(() => ({}));
+        if (response.ok && (data.success === 'true' || data.success === true || response.status === 200)) {
           payload.integrationEnvironment.deliveryStatus = 'DELIVERED_SUCCESSFULLY';
           this.renderSubmissionFeedback(payload, true);
         } else {
-          throw new Error(`HTTP Error ${response.status}`);
+          throw new Error(data.message || `HTTP Error ${response.status}`);
         }
       } catch (err) {
         payload.integrationEnvironment.deliveryStatus = 'DELIVERY_FAILED';
@@ -279,8 +296,8 @@ export class ContactPage {
 
     if (isDelivered) {
       statusBadge = 'INQUIRY DELIVERED';
-      statusTitle = 'Message Sent Successfully';
-      statusDesc = 'Your project inquiry has been received by our engineering team. We will review your requirements.';
+      statusTitle = 'Message Delivered to info@kodmates.com';
+      statusDesc = `Thank you, ${fullName}! Your project inquiry has been delivered directly to info@kodmates.com. Our senior engineering team will review your specifications and reply to ${email} within 24 business hours.`;
     } else if (isError) {
       statusBadge = 'DELIVERY ERROR';
       statusTitle = 'Network Transmission Error';

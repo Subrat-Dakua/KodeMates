@@ -6,7 +6,7 @@
 export const CONTACT_CONFIG = {
   // Verified channels from design specification
   contactDetails: {
-    email: 'hello@kodmates.dev',
+    email: 'info@kodmates.com',
     phone: '+91 98765 43210',
     location: 'Bhubaneswar, India',
     officeLabel: 'Our office',
@@ -71,8 +71,8 @@ export const CONTACT_CONFIG = {
 
   // Backend Integration status
   backendIntegration: {
-    isAvailable: false,
-    endpointUrl: null, // Configurable for project lead (e.g. '/api/contact' or email service webhook)
-    integrationNotice: 'No backend API endpoint or external email dispatch service is currently configured in this codebase repository. Submissions are client-side validated and prepared for API transmission.'
+    isAvailable: true,
+    endpointUrl: 'https://formsubmit.co/ajax/info@kodmates.com',
+    integrationNotice: 'Delivered directly to info@kodmates.com via secure TLS dispatch.'
   }
 };

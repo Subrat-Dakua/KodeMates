@@ -59,7 +59,7 @@ export const asuti = {
       }
     ]
   },
-  screenshots: [],
+  screenshots: ['/assets/projects/asuti-preview.jpg'],
   devices: ['Desktop Web', 'Tablet', 'Mobile'],
   contribution: {
     role: 'Frontend Architect & UI Engineer',
@@ -76,7 +76,7 @@ export const asuti = {
   },
   results: [],
   links: {
-    live: 'https://asuti.com',
+    live: '/demos/asuti/',
     app: null,
     repository: 'https://github.com/Harisankar-Panigrahi/asuti'
   },
@@ -84,7 +84,7 @@ export const asuti = {
     title: 'ASUTI — Minimalist & Aesthetic Skincare Storefront',
     description:
       'High-performance direct-to-consumer digital storefront for ASUTI clean skincare and beauty rituals.',
-    image: ''
+    image: '/assets/projects/asuti-preview.jpg'
   }
 };
 
